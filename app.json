@@ -3,6 +3,7 @@
     "name": "haloticket-mobile-app",
     "slug": "haloticket-mobile-app",
     "version": "1.0.0",
+    "scheme": "haloticket",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -23,7 +24,8 @@
     },
     "plugins": [
       "expo-router",
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-secure-store"
     ]
   }
 }

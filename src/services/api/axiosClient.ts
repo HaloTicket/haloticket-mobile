@@ -1,5 +1,6 @@
 import axios from "axios";
 import { CONFIG } from "@/constants/config";
+import * as SecureStore from "expo-secure-store";
 
 const axiosClient = axios.create({
   baseURL: CONFIG.API_BASE_URL,
@@ -9,20 +10,23 @@ const axiosClient = axios.create({
   timeout: CONFIG.TIMEOUT,
 });
 
-// Request Interceptor: Attach Bearer Staff Token if present
+// request interceptor: attach bearer staff token if present
 axiosClient.interceptors.request.use(
   async (config) => {
-    // In React Native, get token from storage
-    // const token = await storage.getItem(CONFIG.STORAGE_KEYS.STAFF_TOKEN);
-    // if (token && config.headers) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    try {
+      const token = await SecureStore.getItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN);
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error("Error retrieving token:", error);
+    }
     return config;
   },
   (error) => Promise.reject(error),
 );
 
-// Response Interceptor: Catch errors
+// response interceptor: catch errors
 axiosClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
