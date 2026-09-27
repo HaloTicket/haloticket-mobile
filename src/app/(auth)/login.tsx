@@ -1,21 +1,73 @@
-import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, SafeAreaView, ScrollView } from "react-native";
+import { useState, useEffect, useRef } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, SafeAreaView, ScrollView } from "react-native";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppTheme } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
+import { useModal } from "@/hooks/useModal";
+import * as WebBrowser from "expo-web-browser";
+import * as AuthSession from "expo-auth-session";
+import { CONFIG } from "@/constants/config";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
-  const { login } = useAuth();
+  const { login, setAuthenticatedToken } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { colors: theme } = useAppTheme();
+  const { showAlert } = useModal();
+
+  const discovery = AuthSession.useAutoDiscovery(`${CONFIG.KEYCLOAK_URL}/realms/${CONFIG.KEYCLOAK_REALM}`);
+  const redirectUri = AuthSession.makeRedirectUri({ scheme: "haloticket" });
+
+  const [request, response, promptAsync] = AuthSession.useAuthRequest(
+    {
+      clientId: CONFIG.KEYCLOAK_CLIENT_ID,
+      redirectUri,
+      scopes: ["openid", "profile", "email"],
+      extraParams: {
+        kc_idp_hint: "google",
+      },
+    },
+    discovery
+  );
+
+  const isExchanging = useRef(false);
+
+  useEffect(() => {
+    if (response?.type === "success" && !isExchanging.current) {
+      isExchanging.current = true;
+      const { code } = response.params;
+      
+      AuthSession.exchangeCodeAsync(
+        {
+          clientId: CONFIG.KEYCLOAK_CLIENT_ID,
+          code,
+          redirectUri,
+          extraParams: {
+            code_verifier: request?.codeVerifier || "",
+          },
+        },
+        discovery!
+      ).then((tokenResult) => {
+        if (tokenResult.accessToken) {
+          setAuthenticatedToken(tokenResult.accessToken);
+        }
+      }).catch((error) => {
+        isExchanging.current = false;
+        showAlert("Lỗi", "Đăng nhập Google thất bại.");
+      });
+    } else if (response?.type === "error") {
+      showAlert("Lỗi", "Đã có lỗi xảy ra khi xác thực.");
+    }
+  }, [response]);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Lỗi", "Vui lòng nhập đầy đủ email và mật khẩu");
+      showAlert("Lỗi", "Vui lòng nhập đầy đủ email và mật khẩu");
       return;
     }
     
@@ -23,15 +75,18 @@ export default function LoginScreen() {
     try {
       await login(email, password);
     } catch (error) {
-      Alert.alert("Đăng nhập thất bại", "Tài khoản hoặc mật khẩu không chính xác.");
+      showAlert("Đăng nhập thất bại", "Tài khoản hoặc mật khẩu không chính xác.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    // Implement Google login logic here or call a hook
-    Alert.alert("Thông báo", "Tính năng đăng nhập Google đang được phát triển.");
+    if (!request) {
+      showAlert("Lỗi", "Đang kết nối tới máy chủ xác thực, vui lòng thử lại sau giây lát.");
+      return;
+    }
+    promptAsync();
   };
 
   return (
@@ -103,7 +158,7 @@ export default function LoginScreen() {
               </TouchableOpacity>
 
               <View style={styles.forgotPasswordRow}>
-                <TouchableOpacity onPress={() => Alert.alert("Thông báo", "Quên mật khẩu")}>
+                <TouchableOpacity onPress={() => showAlert("Thông báo", "Quên mật khẩu")}>
                   <Text style={[styles.forgotPasswordText, { color: theme.primary }]}>Quên mật khẩu?</Text>
                 </TouchableOpacity>
               </View>

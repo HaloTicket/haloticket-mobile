@@ -1,8 +1,16 @@
-import { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, SafeAreaView, ScrollView } from "react-native";
+import { useState, useEffect, useRef } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, SafeAreaView, ScrollView } from "react-native";
 import { useAppTheme } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useRouter } from "expo-router";
+import { authApi, AuthChallengeResponse, createIdempotencyKey, getAuthErrorMessage, secondsUntil } from "@/services/auth/authApi";
+import { useModal } from "@/hooks/useModal";
+import * as WebBrowser from "expo-web-browser";
+import * as AuthSession from "expo-auth-session";
+import { CONFIG } from "@/constants/config";
+import { useAuth } from "@/hooks/useAuth";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
@@ -14,9 +22,57 @@ export default function RegisterScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<"form" | "otp" | "done">("form");
   const [cooldown, setCooldown] = useState(0);
+  const [challenge, setChallenge] = useState<AuthChallengeResponse | null>(null);
 
   const { colors: theme } = useAppTheme();
   const router = useRouter();
+  const { showAlert } = useModal();
+  const { setAuthenticatedToken } = useAuth();
+
+  const discovery = AuthSession.useAutoDiscovery(`${CONFIG.KEYCLOAK_URL}/realms/${CONFIG.KEYCLOAK_REALM}`);
+  const redirectUri = AuthSession.makeRedirectUri({ scheme: "haloticket" });
+
+  const [request, response, promptAsync] = AuthSession.useAuthRequest(
+    {
+      clientId: CONFIG.KEYCLOAK_CLIENT_ID,
+      redirectUri,
+      scopes: ["openid", "profile", "email"],
+      extraParams: {
+        kc_idp_hint: "google",
+      },
+    },
+    discovery
+  );
+
+  const isExchanging = useRef(false);
+
+  useEffect(() => {
+    if (response?.type === "success" && !isExchanging.current) {
+      isExchanging.current = true;
+      const { code } = response.params;
+      
+      AuthSession.exchangeCodeAsync(
+        {
+          clientId: CONFIG.KEYCLOAK_CLIENT_ID,
+          code,
+          redirectUri,
+          extraParams: {
+            code_verifier: request?.codeVerifier || "",
+          },
+        },
+        discovery!
+      ).then((tokenResult) => {
+        if (tokenResult.accessToken) {
+          setAuthenticatedToken(tokenResult.accessToken);
+        }
+      }).catch((error) => {
+        isExchanging.current = false;
+        showAlert("Lỗi", "Đăng ký/Đăng nhập Google thất bại.");
+      });
+    } else if (response?.type === "error") {
+      showAlert("Lỗi", "Đã có lỗi xảy ra khi xác thực.");
+    }
+  }, [response]);
 
   useEffect(() => {
     if (!cooldown) return;
@@ -30,13 +86,14 @@ export default function RegisterScreen() {
     if (!canContinue) return;
     setIsLoading(true);
     try {
-      // TODO: Call API to register and request OTP
-      // Mocking API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const idempotencyKey = createIdempotencyKey("register-start");
+      const result = await authApi.registerStart(email.trim(), password, idempotencyKey);
+      setChallenge(result);
       setStep("otp");
-      setCooldown(60);
+      setCooldown(secondsUntil(result.resendAvailableAt));
     } catch (error) {
-      Alert.alert("Lỗi", "Không thể gửi mã xác minh.");
+      const { key } = getAuthErrorMessage(error, "Không thể gửi mã xác minh.");
+      showAlert("Lỗi", key);
     } finally {
       setIsLoading(false);
     }
@@ -44,38 +101,48 @@ export default function RegisterScreen() {
 
   const handleVerifyOtp = async () => {
     if (otp.length !== 6) {
-      Alert.alert("Lỗi", "Mã OTP phải gồm 6 chữ số.");
+      showAlert("Lỗi", "Mã OTP phải gồm 6 chữ số.");
       return;
     }
+    if (!challenge || secondsUntil(challenge.expiresAt) === 0) {
+      showAlert("Lỗi", "Mã OTP đã hết hạn. Vui lòng gửi lại mã mới.");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // TODO: Call API to verify OTP
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await authApi.registerVerify(challenge.challengeId, email.trim(), password, otp);
       setStep("done");
     } catch (error) {
-      Alert.alert("Lỗi", "Mã OTP không hợp lệ hoặc đã hết hạn.");
+      const { key } = getAuthErrorMessage(error, "Mã OTP không hợp lệ hoặc đã hết hạn.");
+      showAlert("Lỗi", key);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleResendOtp = async () => {
-    if (cooldown > 0) return;
+    if (!challenge || cooldown > 0) return;
     setIsLoading(true);
     try {
-      // TODO: Call API to resend OTP
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setCooldown(60);
-      Alert.alert("Thông báo", "Đã gửi lại mã OTP.");
+      const result = await authApi.registerResend(challenge.challengeId);
+      setChallenge(result);
+      setCooldown(secondsUntil(result.resendAvailableAt));
+      showAlert("Thông báo", "Đã gửi lại mã OTP.");
     } catch (error) {
-      Alert.alert("Lỗi", "Không thể gửi lại mã OTP.");
+      const { key } = getAuthErrorMessage(error, "Không thể gửi lại mã OTP.");
+      showAlert("Lỗi", key);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    Alert.alert("Thông báo", "Tính năng đăng nhập Google đang được phát triển.");
+    if (!request) {
+      showAlert("Lỗi", "Đang kết nối tới máy chủ xác thực, vui lòng thử lại sau giây lát.");
+      return;
+    }
+    promptAsync();
   };
 
   return (
@@ -93,7 +160,7 @@ export default function RegisterScreen() {
               </Text>
               <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
                 {step === "form" 
-                  ? "Tạo tài khoản để bắt đầu đặt vé" 
+                  ? "Tạo tài khoản để bắt đầu quản lý sự kiện" 
                   : step === "otp" 
                   ? `Nhập mã 6 số đã gửi tới ${email}` 
                   : "Tài khoản của bạn đã được tạo thành công."}

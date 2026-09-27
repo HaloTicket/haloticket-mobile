@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "haloticket-mobile-app",
+    "name": "HaloTicket Event Manager",
     "slug": "haloticket-mobile-app",
     "version": "1.0.0",
     "scheme": "haloticket",
@@ -25,7 +25,9 @@
     "plugins": [
       "expo-router",
       "expo-status-bar",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font",
+      "expo-web-browser"
     ]
   }
 }
