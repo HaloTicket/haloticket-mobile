@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, TextInput } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, TextInput, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAppTheme } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -9,6 +9,15 @@ export default function EventDashboardScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"revenue" | "checkin" | "orders">("revenue");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleTabChange = (tab: "revenue" | "checkin" | "orders") => {
+    setActiveTab(tab);
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+  };
   
   // custom circular progress bar component (simplified)
   const CircularProgress = ({ percentage, color }: { percentage: number, color: string }) => (
@@ -186,19 +195,19 @@ export default function EventDashboardScreen() {
       <View style={[styles.tabNav, { borderBottomColor: colors.border }]}>
         <TouchableOpacity 
           style={[styles.tabNavItem, activeTab === "revenue" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
-          onPress={() => setActiveTab("revenue")}
+          onPress={() => handleTabChange("revenue")}
         >
           <Text style={[styles.tabNavText, activeTab === "revenue" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>Doanh thu</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.tabNavItem, activeTab === "checkin" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
-          onPress={() => setActiveTab("checkin")}
+          onPress={() => handleTabChange("checkin")}
         >
           <Text style={[styles.tabNavText, activeTab === "checkin" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>Check-in</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.tabNavItem, activeTab === "orders" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
-          onPress={() => setActiveTab("orders")}
+          onPress={() => handleTabChange("orders")}
         >
           <Text style={[styles.tabNavText, activeTab === "orders" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>Đơn hàng</Text>
         </TouchableOpacity>
@@ -206,9 +215,17 @@ export default function EventDashboardScreen() {
 
       {/* Tab Content */}
       <View style={styles.contentContainer}>
-        {activeTab === "revenue" && renderRevenue()}
-        {activeTab === "checkin" && renderCheckIn()}
-        {activeTab === "orders" && renderOrders()}
+        {isLoading ? (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+        ) : (
+          <>
+            {activeTab === "revenue" && renderRevenue()}
+            {activeTab === "checkin" && renderCheckIn()}
+            {activeTab === "orders" && renderOrders()}
+          </>
+        )}
       </View>
     </SafeAreaView>
   );

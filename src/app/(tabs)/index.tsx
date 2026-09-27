@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, TextInput, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, TextInput, SafeAreaView, ActivityIndicator } from "react-native";
 import { useAppTheme } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -26,6 +26,15 @@ export default function OrganizerCenterScreen() {
   const { colors, isDark, toggleTheme } = useAppTheme();
   const router = useRouter();
   const [filter, setFilter] = useState<"upcoming" | "past">("upcoming");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleFilter = (newFilter: "upcoming" | "past") => {
+    setFilter(newFilter);
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+  };
 
   const renderEvent = ({ item }: { item: typeof MOCK_EVENTS[0] }) => (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -83,7 +92,7 @@ export default function OrganizerCenterScreen() {
           </View>
           <TouchableOpacity 
             style={[styles.filterBtn, filter === "upcoming" ? { backgroundColor: colors.primary } : { borderColor: colors.border, borderWidth: 1 }]}
-            onPress={() => setFilter("upcoming")}
+            onPress={() => handleFilter("upcoming")}
           >
             <Text style={[styles.filterText, filter === "upcoming" ? { color: "#fff", fontWeight: "600" } : { color: colors.textSecondary }]}>
               Sắp tới
@@ -91,7 +100,7 @@ export default function OrganizerCenterScreen() {
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.filterBtn, filter === "past" ? { backgroundColor: colors.primary } : { borderColor: colors.border, borderWidth: 1 }]}
-            onPress={() => setFilter("past")}
+            onPress={() => handleFilter("past")}
           >
             <Text style={[styles.filterText, filter === "past" ? { color: "#fff", fontWeight: "600" } : { color: colors.textSecondary }]}>
               Đã qua
@@ -100,13 +109,19 @@ export default function OrganizerCenterScreen() {
         </View>
 
         {/* Event List */}
-        <FlatList
-          data={MOCK_EVENTS}
-          keyExtractor={(item) => item.id}
-          renderItem={renderEvent}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-        />
+        {isLoading ? (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+        ) : (
+          <FlatList
+            data={MOCK_EVENTS}
+            keyExtractor={(item) => item.id}
+            renderItem={renderEvent}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
       </View>
     </SafeAreaView>
   );

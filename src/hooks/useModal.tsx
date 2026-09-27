@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from "react";
-import { Modal, View, Text, TouchableOpacity, StyleSheet, TouchableWithoutFeedback } from "react-native";
+import { Modal, View, Text, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Platform } from "react-native";
 import { useAppTheme } from "@/theme";
 
 interface ModalContextData {
@@ -101,6 +101,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
+    ...(Platform.OS === "web" ? { zIndex: 9999, position: "absolute", top: 0, left: 0, right: 0, bottom: 0 } : {}),
   },
   modalContainer: {
     width: "100%",
