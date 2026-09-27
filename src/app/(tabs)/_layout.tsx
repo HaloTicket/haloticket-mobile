@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
 import { useAppTheme } from "@/theme";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function StaffTabLayout() {
   const { colors } = useAppTheme();
@@ -9,28 +10,35 @@ export default function StaffTabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.tabIconDefault,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
         },
       }}
     >
       <Tabs.Screen
         name="index"
-        options={{ title: "Quét Mã", tabBarLabel: "Quét Mã" }}
-      />
-      <Tabs.Screen
-        name="events"
-        options={{ title: "Ca Trực", tabBarLabel: "Ca Trực" }}
-      />
-      <Tabs.Screen
-        name="history"
-        options={{ title: "Lịch Sử", tabBarLabel: "Lịch Sử" }}
+        options={{ 
+          title: "Sự kiện", 
+          tabBarLabel: "Sự kiện",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="calendar-outline" size={size} color={color} />
+          )
+        }}
       />
       <Tabs.Screen
         name="profile"
-        options={{ title: "Nhân Viên", tabBarLabel: "Nhân Viên" }}
+        options={{ 
+          title: "Tài khoản", 
+          tabBarLabel: "Tài khoản",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-outline" size={size} color={color} />
+          )
+        }}
       />
     </Tabs>
   );

@@ -1,12 +1,9 @@
-import { useColorScheme } from "react-native";
-import { Colors } from "./colors";
+import { useContext } from "react";
+import { ThemeContext } from "./ThemeProvider";
 
 export * from "./colors";
+export * from "./ThemeProvider";
 
 export const useAppTheme = () => {
-  const scheme = useColorScheme();
-  const isDark = scheme === "dark";
-  const colors = isDark ? Colors.dark : Colors.light;
-
-  return { scheme, isDark, colors };
+  return useContext(ThemeContext);
 };

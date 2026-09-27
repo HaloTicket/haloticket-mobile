@@ -4,8 +4,16 @@ const rawApiUrl = process.env.EXPO_PUBLIC_API_URL || "http://10.0.2.2:8888/api";
 const rawKeycloakUrl = process.env.EXPO_PUBLIC_KEYCLOAK_URL || "http://10.0.2.2:9080";
 
 const isWeb = Platform.OS === "web";
-const API_BASE_URL = isWeb ? rawApiUrl.replace("10.0.2.2", "localhost") : rawApiUrl;
-const KEYCLOAK_URL = isWeb ? rawKeycloakUrl.replace("10.0.2.2", "localhost") : rawKeycloakUrl;
+let API_BASE_URL = rawApiUrl;
+let KEYCLOAK_URL = rawKeycloakUrl;
+
+if (isWeb && typeof window !== "undefined") {
+  const hostname = window.location.hostname;
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    API_BASE_URL = rawApiUrl.replace(/:\/\/[^/:]+/, `://${hostname}`);
+    KEYCLOAK_URL = rawKeycloakUrl.replace(/:\/\/[^/:]+/, `://${hostname}`);
+  }
+}
 
 export const CONFIG = {
   API_BASE_URL,

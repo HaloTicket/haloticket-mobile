@@ -3,7 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
-import { useAppTheme } from "@/theme";
+import { useAppTheme, ThemeProvider } from "@/theme";
 import { ModalProvider } from "@/hooks/useModal";
 import { useFonts } from "expo-font";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -40,14 +40,6 @@ function RootLayoutNav() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="(auth)" />
-      <Stack.Screen
-        name="check-in/[ticketCode]/index"
-        options={{ headerShown: true, title: "Kết Quả Soát Vé" }}
-      />
-      <Stack.Screen
-        name="events/select-gate"
-        options={{ headerShown: true, title: "Chọn Cổng Soát Vé" }}
-      />
     </Stack>
   );
 }
@@ -62,11 +54,13 @@ export default function RootLayout() {
   }
 
   return (
-    <ModalProvider>
-      <AuthProvider>
-        <StatusBar style="auto" />
-        <RootLayoutNav />
-      </AuthProvider>
-    </ModalProvider>
+    <ThemeProvider>
+      <ModalProvider>
+        <AuthProvider>
+          <StatusBar style="auto" />
+          <RootLayoutNav />
+        </AuthProvider>
+      </ModalProvider>
+    </ThemeProvider>
   );
 }
