@@ -1,38 +1,9 @@
 import axiosClient from "./axiosClient";
-
-export interface EventApiData {
-  id?: string;
-  title?: string;
-  locationName?: string;
-  address?: string;
-  startTime?: string;
-  endTime?: string;
-  image?: string;
-  bannerUrl?: string;
-  thumbnailUrl?: string;
-  posterImage?: string;
-  eventStatus?: string;
-  eventApprovalStatus?: string;
-  organizer?: {
-    id?: string;
-    userId?: string;
-    name?: string;
-  };
-  staffAssignments?: Array<{
-    email: string;
-    role: string;
-  }>;
-  showtimes?: Array<{
-    id: string;
-    startTime: string;
-    endTime: string;
-    name?: string;
-  }>;
-}
+import { EventData } from "@/types/event";
 
 export const eventApi = {
   // fetch all events
-  getAllEvents: async (): Promise<EventApiData[]> => {
+  getAllEvents: async (): Promise<EventData[]> => {
     try {
       const response: any = await axiosClient.get("/events");
       if (Array.isArray(response)) {
@@ -54,7 +25,7 @@ export const eventApi = {
   },
 
   // fetch only events assigned to me
-  getMyEvents: async (): Promise<EventApiData[]> => {
+  getMyEvents: async (): Promise<EventData[]> => {
     try {
       const response: any = await axiosClient.get("/events/my-events");
       if (Array.isArray(response)) {
@@ -76,7 +47,7 @@ export const eventApi = {
   },
 
   // fetch event details by id
-  getEventById: async (id: string): Promise<EventApiData | null> => {
+  getEventById: async (id: string): Promise<EventData | null> => {
     try {
       const response: any = await axiosClient.get(`/events/${id}`);
       if (response && response.id) {

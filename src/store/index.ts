@@ -1,4 +1,3 @@
-// Store configuration placeholder for Check-in Staff App
 export interface RootState {
   auth: {
     staff: any | null;

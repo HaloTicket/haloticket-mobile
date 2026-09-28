@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Tex
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { useAppTheme } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { eventApi, EventApiData } from "@/services/api/eventApi";
+import { eventApi } from "@/services/api/eventApi";
+import { EventData } from "@/types/event";
 
 export default function EventDashboardScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
@@ -12,15 +13,15 @@ export default function EventDashboardScreen() {
   
   const [activeTab, setActiveTab] = useState<"revenue" | "checkin" | "orders">("revenue");
   const [isLoading, setIsLoading] = useState(true);
-  const [event, setEvent] = useState<EventApiData | null>(null);
+  const [event, setEvent] = useState<EventData | null>(null);
   const [analytics, setAnalytics] = useState<any>(null);
   
-  // Orders
+  // orders
   const [orders, setOrders] = useState<any[]>([]);
   const [searchOrder, setSearchOrder] = useState("");
   const [isOrdersLoading, setIsOrdersLoading] = useState(false);
   
-  // Showtimes
+  // showtimes
   const [selectedShowtimeId, setSelectedShowtimeId] = useState<string>("");
 
   const fetchDashboardData = async () => {

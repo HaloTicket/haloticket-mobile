@@ -1,21 +1,27 @@
-import { useState } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, TextInput, ActivityIndicator } from "react-native";
+import { useState, useCallback } from "react";
+import { View, Text, StyleSheet, FlatList, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppTheme } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { eventApi, EventApiData } from "@/services/api/eventApi";
+import { eventApi } from "@/services/api/eventApi";
+import { EventData } from "@/types/event";
 import { useAuth } from "@/hooks/useAuth";
 import { useFocusEffect } from "expo-router";
-import { useCallback } from "react";
+
+import { OrganizerHeader } from "@/components/layout/OrganizerHeader";
+import { EventFilterTabs } from "@/components/event/EventFilterTabs";
+import { EventCard } from "@/components/event/EventCard";
+import { SearchBar } from "@/components/ui/SearchBar";
 
 export default function OrganizerCenterScreen() {
-  const { colors, isDark, toggleTheme } = useAppTheme();
-  const router = useRouter();
+  const { colors } = useAppTheme();
   const { user } = useAuth();
+  
   const [filter, setFilter] = useState<"upcoming" | "past">("upcoming");
   const [isLoading, setIsLoading] = useState(true);
-  const [events, setEvents] = useState<EventApiData[]>([]);
+  const [events, setEvents] = useState<EventData[]>([]);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchEvents = async () => {
     setIsLoading(true);
@@ -35,11 +41,7 @@ export default function OrganizerCenterScreen() {
     }, [user])
   );
 
-  const handleFilter = (newFilter: "upcoming" | "past") => {
-    setFilter(newFilter);
-  };
-
-  const getEventTabStatus = (ev: EventApiData): string => {
+  const getEventTabStatus = (ev: EventData): string => {
     if (ev.endTime && new Date(ev.endTime) < new Date()) {
       return "past";
     }
@@ -48,81 +50,38 @@ export default function OrganizerCenterScreen() {
     return "upcoming";
   };
 
-  const filteredEvents = events.filter((ev) => getEventTabStatus(ev) === filter);
+  const filteredEvents = events.filter((ev) => {
+    const matchesFilter = getEventTabStatus(ev) === filter;
+    const matchesSearch = ev.title?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
 
-  const renderEvent = ({ item }: { item: EventApiData }) => (
-    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <View style={styles.cardContent}>
-        <Image source={{ uri: item.image }} style={styles.eventImage} />
-        <Text style={[styles.eventTitle, { color: colors.text }]} numberOfLines={3}>
-          {item.title}
-        </Text>
-      </View>
-      <View style={[styles.cardActions, { borderTopColor: colors.border }]}>
-        <TouchableOpacity 
-          style={[styles.actionButton, { borderColor: colors.border, borderRightWidth: 1 }]}
-          onPress={() => router.push(`/events/${item.id}`)}
-        >
-          <Ionicons name="stats-chart-outline" size={18} color={colors.textSecondary} style={styles.actionIcon} />
-          <Text style={[styles.actionText, { color: colors.textSecondary }]}>Quản lý</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.actionButton, { backgroundColor: colors.primary }]}
-          onPress={() => router.push(`/check-in/${item.id}`)}
-        >
-          <Ionicons name="scan-outline" size={18} color={"#fff"} style={styles.actionIcon} />
-          <Text style={[styles.actionText, { color: "#fff", fontWeight: "600" }]}>Quét vé</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  const handleToggleSearch = () => {
+    setIsSearchVisible(!isSearchVisible);
+    if (isSearchVisible) {
+      setSearchQuery("");
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <View style={styles.container}>
-                {/* Header */}
-        <View style={styles.header}>
-          <View style={[styles.headerLeft, { flex: 1 }]}>
-            <View style={[styles.logoIconContainer, { backgroundColor: colors.primary }]}>
-              <Ionicons name="ticket" size={18} color="#fff" style={{ transform: [{ rotate: '-12deg' }] }} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.logoText, { color: colors.primary }]} numberOfLines={1}>HaloTicket</Text>
-              <Text style={[styles.headerTitle, { color: colors.textSecondary, fontSize: 13, fontWeight: "500", marginTop: -2 }]} numberOfLines={1}>Organizer Center</Text>
-            </View>
-          </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.headerActionBtn}>
-              <Ionicons name="language-outline" size={22} color={colors.text} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.headerActionBtn} onPress={toggleTheme}>
-              <Ionicons name={isDark ? "sunny-outline" : "moon-outline"} size={22} color={colors.text} />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <OrganizerHeader />
 
-        {/* Filters */}
-        <View style={styles.filterRow}>
-          <View style={[styles.searchIcon, { backgroundColor: colors.surface }]}>
-            <Ionicons name="search" size={20} color={colors.text} />
-          </View>
-          <TouchableOpacity 
-            style={[styles.filterBtn, filter === "upcoming" ? { backgroundColor: colors.primary } : { borderColor: colors.border, borderWidth: 1 }]}
-            onPress={() => handleFilter("upcoming")}
-          >
-            <Text style={[styles.filterText, filter === "upcoming" ? { color: "#fff", fontWeight: "600" } : { color: colors.textSecondary }]}>
-              Sắp tới
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.filterBtn, filter === "past" ? { backgroundColor: colors.primary } : { borderColor: colors.border, borderWidth: 1 }]}
-            onPress={() => handleFilter("past")}
-          >
-            <Text style={[styles.filterText, filter === "past" ? { color: "#fff", fontWeight: "600" } : { color: colors.textSecondary }]}>
-              Đã qua
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <EventFilterTabs 
+          filter={filter} 
+          onFilterChange={setFilter} 
+          isSearchVisible={isSearchVisible}
+          onToggleSearch={handleToggleSearch}
+        />
+
+        {isSearchVisible && (
+          <SearchBar 
+            value={searchQuery} 
+            onChangeText={setSearchQuery} 
+            placeholder="Tìm kiếm sự kiện..." 
+          />
+        )}
 
         {/* Event List */}
         {isLoading ? (
@@ -138,7 +97,7 @@ export default function OrganizerCenterScreen() {
           <FlatList
             data={filteredEvents}
             keyExtractor={(item) => item.id || Math.random().toString()}
-            renderItem={renderEvent}
+            renderItem={({ item }) => <EventCard event={item} />}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
           />
@@ -157,115 +116,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  headerActionBtn: {
-    padding: 4,
-  },
-  logoIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  logoText: {
-    fontSize: 22,
-    fontWeight: "900",
-    letterSpacing: -0.5,
-    marginRight: 12,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  filterRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-    gap: 12,
-  },
-  searchIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  filterBtn: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  filterText: {
-    fontSize: 14,
-  },
   listContent: {
-    paddingBottom: 20,
-    gap: 16,
-  },
-  card: {
-    borderWidth: 1,
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  cardContent: {
-    flexDirection: "row",
-    padding: 16,
-    gap: 12,
-  },
-  eventImage: {
-    width: 100,
-    height: 60,
-    borderRadius: 6,
-    backgroundColor: "#333",
-  },
-  eventTitle: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: "500",
-    lineHeight: 20,
-  },
-  cardActions: {
-    flexDirection: "row",
-    borderTopWidth: 1,
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 12,
-    gap: 12,
-  },
-  actionIcon: {
-    marginRight: 4,
-  },
-  actionText: {
-    fontSize: 14,
+    paddingBottom: 24,
   },
 });
-
-
-
-
-
