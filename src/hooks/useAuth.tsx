@@ -1,8 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { DeviceEventEmitter } from "react-native";
 import { storage } from "@/utils/storage";
 import { authApi } from "@/services/auth/authApi";
 import { CONFIG } from "@/constants/config";
 import { jwtDecode } from "jwt-decode";
+import { useModal } from "@/hooks/useModal";
 
 interface User {
   name?: string;
@@ -51,6 +53,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const { showAlert } = useModal();
+
   useEffect(() => {
     // check token on mount
     const checkToken = async () => {
@@ -66,15 +70,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
     checkToken();
+
+    const subscription = DeviceEventEmitter.addListener('onTokenExpired', () => {
+      showAlert(
+        "Phiên đăng nhập hết hạn",
+        "Vui lòng đăng nhập lại để tiếp tục.",
+        () => logout()
+      );
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   const login = async (username: string, pin: string) => {
     try {
       const response = await authApi.login(username, pin);
-      // Wait, authApi.login returns the token? 
-      // Assuming authApi.login internally sets the token or returns it.
-      // If it doesn't return the token, we might need to retrieve it.
-      // We will check storage right after login just to be safe.
       const token = await storage.getItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN);
       if (token) processToken(token);
     } catch (error) {

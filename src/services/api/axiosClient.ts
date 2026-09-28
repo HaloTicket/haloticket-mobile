@@ -44,7 +44,7 @@ axiosClient.interceptors.response.use(
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
       
-      // Remove token and retry
+      // remove token and retry
       if (originalRequest.headers) {
         if (typeof originalRequest.headers.delete === "function") {
           originalRequest.headers.delete("Authorization");
@@ -65,9 +65,12 @@ axiosClient.interceptors.response.use(
           },
         });
         return retryRes.data;
-      } catch (retryErr: any) {
+        } catch (retryErr: any) {
         if (retryErr?.response?.status === 401) {
            storage.deleteItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN).catch(console.warn);
+           import('react-native').then(({ DeviceEventEmitter }) => {
+             DeviceEventEmitter.emit('onTokenExpired');
+           });
         }
         return Promise.reject(retryErr);
       }

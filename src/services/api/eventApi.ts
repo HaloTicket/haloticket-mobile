@@ -88,4 +88,17 @@ export const eventApi = {
       return { content: [], totalElements: 0, totalPages: 0 };
     }
   },
+
+  // get checkins for an event
+  getEventCheckins: async (eventId: string, showtimeId: string = ""): Promise<any[]> => {
+    try {
+      const response: any = await axiosClient.get(`/tickets/checkin/events/${eventId}`, {
+        params: showtimeId ? { showtimeId } : {}
+      });
+      return response.data || response || [];
+    } catch (err) {
+      console.error("Failed to get event checkins:", err);
+      return [];
+    }
+  },
 };

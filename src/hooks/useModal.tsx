@@ -3,7 +3,7 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, TouchableWithoutFeedba
 import { useAppTheme } from "@/theme";
 
 interface ModalContextData {
-  showAlert: (title: string, message: string) => void;
+  showAlert: (title: string, message: string, onClose?: () => void) => void;
   showConfirm: (title: string, message: string, onConfirm: () => void, onCancel?: () => void) => void;
 }
 
@@ -27,8 +27,8 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
   });
   const { colors } = useAppTheme();
 
-  const showAlert = (title: string, message: string) => {
-    setModalState({ visible: true, type: "alert", title, message });
+  const showAlert = (title: string, message: string, onClose?: () => void) => {
+    setModalState({ visible: true, type: "alert", title, message, onConfirm: onClose, onCancel: onClose });
   };
 
   const showConfirm = (title: string, message: string, onConfirm: () => void, onCancel?: () => void) => {
