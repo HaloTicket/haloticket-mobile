@@ -16,7 +16,11 @@ axiosClient.interceptors.request.use(
     try {
       const token = await storage.getItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN);
       if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
+        if (typeof config.headers.set === 'function') {
+          config.headers.set('Authorization', `Bearer ${token.trim()}`);
+        } else {
+          config.headers.Authorization = `Bearer ${token.trim()}`;
+        }
       }
     } catch (error) {
       console.error("Error retrieving token:", error);
@@ -26,13 +30,49 @@ axiosClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// response interceptor: catch errors
+interface AuthRequestMetadata {
+  _retry?: boolean;
+}
+
+// response interceptor: catch errors and retry public calls if token is invalid/expired
 axiosClient.interceptors.response.use(
   (response) => response.data,
-  (error) => {
-    if (error.response?.status === 401) {
-      console.error("[Staff App] Unauthorized or expired session!");
+  async (error) => {
+    console.warn("API Error:", error.config?.url, error.response?.status);
+    const originalRequest = error.config as (typeof error.config & AuthRequestMetadata) | undefined;
+    
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      // Remove token and retry
+      if (originalRequest.headers) {
+        if (typeof originalRequest.headers.delete === "function") {
+          originalRequest.headers.delete("Authorization");
+          originalRequest.headers.delete("authorization");
+        } else {
+          delete (originalRequest.headers as Record<string, unknown>).Authorization;
+          delete (originalRequest.headers as Record<string, unknown>).authorization;
+        }
+      }
+      
+      try {
+        const retryRes = await axios({
+          ...originalRequest,
+          headers: {
+            ...originalRequest.headers,
+            Authorization: undefined,
+            authorization: undefined,
+          },
+        });
+        return retryRes.data;
+      } catch (retryErr: any) {
+        if (retryErr?.response?.status === 401) {
+           storage.deleteItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN).catch(console.warn);
+        }
+        return Promise.reject(retryErr);
+      }
     }
+    
     return Promise.reject(error);
   },
 );

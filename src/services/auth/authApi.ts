@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 import axiosClient from "@/services/api/axiosClient";
-import * as SecureStore from "expo-secure-store";
+import { storage } from "@/utils/storage";
 import { CONFIG } from "@/constants/config";
 
 export const AUTH_ENDPOINTS = {
@@ -63,13 +63,13 @@ export const authApi = {
       "Không thể đăng nhập. Vui lòng kiểm tra email và mật khẩu.",
     );
     if (response.accessToken) {
-      await SecureStore.setItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN, response.accessToken);
+      await storage.setItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN, response.accessToken);
     }
     return response;
   },
   
   logout: async () => {
-    await SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN);
+    await storage.deleteItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN);
   },
 
   registerStart: (email: string, password: string, idempotencyKey: string) => request<AuthChallengeResponse>(

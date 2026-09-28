@@ -1,42 +1,56 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, TextInput, SafeAreaView, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, TextInput, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppTheme } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-
-const MOCK_EVENTS = [
-  {
-    id: "1",
-    title: "[TP.HCM] Những Thành Phố Mơ Màng Year End 2024",
-    image: "https://images.unsplash.com/photo-1540039155732-68473678c48a?w=400&q=80",
-  },
-  {
-    id: "2",
-    title: "[Nhà Hát THANH NIÊN] Hài kịch: Lạc lối ở BangKok",
-    image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&q=80",
-  },
-  {
-    id: "3",
-    title: "1900 Future Hits #61: Quang Hùng MasterD | Thursday 21.11.2024",
-    image: "https://images.unsplash.com/photo-1470229722913-7c090be5c5a5?w=400&q=80",
-  },
-];
+import { eventApi, EventApiData } from "@/services/api/eventApi";
+import { useAuth } from "@/hooks/useAuth";
+import { useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 
 export default function OrganizerCenterScreen() {
   const { colors, isDark, toggleTheme } = useAppTheme();
   const router = useRouter();
+  const { user } = useAuth();
   const [filter, setFilter] = useState<"upcoming" | "past">("upcoming");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [events, setEvents] = useState<EventApiData[]>([]);
+
+  const fetchEvents = async () => {
+    setIsLoading(true);
+    try {
+      const data = await eventApi.getMyEvents();
+      setEvents(data);
+    } catch (error) {
+      console.error("Fetch events error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchEvents();
+    }, [user])
+  );
 
   const handleFilter = (newFilter: "upcoming" | "past") => {
     setFilter(newFilter);
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
   };
 
-  const renderEvent = ({ item }: { item: typeof MOCK_EVENTS[0] }) => (
+  const getEventTabStatus = (ev: EventApiData): string => {
+    if (ev.endTime && new Date(ev.endTime) < new Date()) {
+      return "past";
+    }
+    const status = (ev.eventApprovalStatus || ev.eventStatus || "").toUpperCase();
+    if (status === "ENDED" || status === "PASSED" || status === "COMPLETED") return "past";
+    return "upcoming";
+  };
+
+  const filteredEvents = events.filter((ev) => getEventTabStatus(ev) === filter);
+
+  const renderEvent = ({ item }: { item: EventApiData }) => (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={styles.cardContent}>
         <Image source={{ uri: item.image }} style={styles.eventImage} />
@@ -68,12 +82,14 @@ export default function OrganizerCenterScreen() {
       <View style={styles.container}>
                 {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
-                        <View style={[styles.logoIconContainer, { backgroundColor: colors.primary }]}>
+          <View style={[styles.headerLeft, { flex: 1 }]}>
+            <View style={[styles.logoIconContainer, { backgroundColor: colors.primary }]}>
               <Ionicons name="ticket" size={18} color="#fff" style={{ transform: [{ rotate: '-12deg' }] }} />
             </View>
-            <Text style={[styles.logoText, { color: colors.primary }]}>HaloTicket</Text>
-            <Text style={[styles.headerTitle, { color: colors.primary }]}>Organizer Center</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.logoText, { color: colors.primary }]} numberOfLines={1}>HaloTicket</Text>
+              <Text style={[styles.headerTitle, { color: colors.textSecondary, fontSize: 13, fontWeight: "500", marginTop: -2 }]} numberOfLines={1}>Organizer Center</Text>
+            </View>
           </View>
           <View style={styles.headerActions}>
             <TouchableOpacity style={styles.headerActionBtn}>
@@ -113,10 +129,15 @@ export default function OrganizerCenterScreen() {
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
             <ActivityIndicator size="large" color={colors.primary} />
           </View>
+        ) : filteredEvents.length === 0 ? (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Ionicons name="calendar-clear-outline" size={64} color={colors.border} />
+            <Text style={{ marginTop: 16, fontSize: 16, color: colors.textSecondary }}>Không có sự kiện nào.</Text>
+          </View>
         ) : (
           <FlatList
-            data={MOCK_EVENTS}
-            keyExtractor={(item) => item.id}
+            data={filteredEvents}
+            keyExtractor={(item) => item.id || Math.random().toString()}
             renderItem={renderEvent}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}

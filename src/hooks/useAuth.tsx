@@ -30,6 +30,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const processToken = (token: string) => {
     try {
       const decoded: any = jwtDecode(token);
+      
+      // check if token is expired
+      if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+        console.warn("Token is expired");
+        logout();
+        return;
+      }
+      
       setUser({
         name: decoded.name || decoded.given_name || decoded.preferred_username,
         email: decoded.email,
