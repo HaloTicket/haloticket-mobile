@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, TextInput, ActivityIndicator, FlatList } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, FlatList, RefreshControl } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Svg, { Circle } from 'react-native-svg';
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { useAppTheme } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,6 +15,7 @@ export default function EventDashboardScreen() {
   
   const [activeTab, setActiveTab] = useState<"revenue" | "checkin" | "orders">("revenue");
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [event, setEvent] = useState<EventData | null>(null);
   const [analytics, setAnalytics] = useState<any>(null);
   
@@ -24,9 +27,13 @@ export default function EventDashboardScreen() {
   // showtimes
   const [selectedShowtimeId, setSelectedShowtimeId] = useState<string>("");
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (refresh = false) => {
     if (!eventId) return;
-    setIsLoading(true);
+    if (refresh) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
     try {
       const [eventRes, analyticsRes] = await Promise.all([
         eventApi.getEventById(eventId as string),
@@ -38,8 +45,16 @@ export default function EventDashboardScreen() {
       console.error("fetchDashboardData error:", e);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
+
+  const onRefresh = useCallback(() => {
+    fetchDashboardData(true);
+    if (activeTab === "orders") {
+      fetchOrders();
+    }
+  }, [eventId, activeTab, searchOrder, selectedShowtimeId]);
 
   const fetchOrders = async () => {
     if (!eventId) return;
@@ -70,13 +85,43 @@ export default function EventDashboardScreen() {
     setActiveTab(tab);
   };
   
-  const CircularProgress = ({ percentage, color }: { percentage: number, color: string }) => (
-    <View style={styles.circularProgressContainer}>
-      <View style={[styles.circularProgress, { borderColor: color }]}>
+  const CircularProgress = ({ percentage, color }: { percentage: number, color: string }) => {
+    const size = 64;
+    const strokeWidth = 6;
+    const radius = (size - strokeWidth) / 2;
+    const circumference = radius * 2 * Math.PI;
+    const strokeDashoffset = circumference - (percentage / 100) * circumference;
+    
+    return (
+      <View style={[styles.circularProgressContainer, { width: size, height: size, justifyContent: 'center', alignItems: 'center' }]}>
+        <Svg width={size} height={size} style={{ position: 'absolute' }}>
+          <Circle
+            stroke={colors.border}
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
+          <Circle
+            stroke={color}
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            strokeWidth={strokeWidth}
+            strokeDasharray={`${circumference} ${circumference}`}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            fill="none"
+            originX={size / 2}
+            originY={size / 2}
+            rotation="-90"
+          />
+        </Svg>
         <Text style={[styles.progressText, { color }]}>{percentage}%</Text>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderShowtimeSelector = () => {
     if (!event?.showtimes || event.showtimes.length === 0) return null;
@@ -115,16 +160,29 @@ export default function EventDashboardScreen() {
   };
 
   const renderRevenue = () => {
-    const totalTarget = analytics?.totalRevenueTarget || 1;
+    console.log("Analytics Data:", analytics);
+    const totalTarget = analytics?.totalRevenueTarget || 0;
     const currentRev = analytics?.currentRevenue || 0;
-    let revPercent = Math.round((currentRev / totalTarget) * 100);
+    let revPercent = totalTarget > 0 ? Number(((currentRev / totalTarget) * 100).toFixed(1)) : (currentRev > 0 ? 100 : 0);
     if (revPercent > 100) revPercent = 100;
     
+    const totalTicketsTarget = analytics?.totalTicketsTarget || 0;
+    const currentTicketsSold = analytics?.currentTicketsSold || 0;
+    let ticketsPercent = totalTicketsTarget > 0 ? Number(((currentTicketsSold / totalTicketsTarget) * 100).toFixed(1)) : (currentTicketsSold > 0 ? 100 : 0);
+    if (ticketsPercent > 100) ticketsPercent = 100;
+
     return (
-      <ScrollView style={styles.tabContent}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Tổng quan</Text>
+      <ScrollView 
+        style={styles.tabContent} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} colors={[colors.primary]} />
+        }
+      >
+        <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 16 }]}>Tổng quan</Text>
         
-        <View style={[styles.card, { backgroundColor: colors.surface }]}>
+        {/* Doanh thu */}
+        <View style={[styles.card, { backgroundColor: colors.surface, marginBottom: 16 }]}>
           <View style={styles.statRow}>
             <View>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Doanh thu</Text>
@@ -138,9 +196,19 @@ export default function EventDashboardScreen() {
           </View>
         </View>
 
-        <View style={[styles.card, { backgroundColor: colors.surface, marginTop: 16, height: 200, justifyContent: 'center', alignItems: 'center' }]}>
-           <Ionicons name="bar-chart" size={48} color={colors.border} />
-           <Text style={{ color: colors.textSecondary, marginTop: 8 }}>[Biểu đồ doanh thu]</Text>
+        {/* Số vé bán ra */}
+        <View style={[styles.card, { backgroundColor: colors.surface, marginBottom: 16 }]}>
+          <View style={styles.statRow}>
+            <View>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Số vé bán ra</Text>
+              <View style={styles.statValueRow}>
+                <View style={[styles.dot, { backgroundColor: "#34C759" }]} />
+                <Text style={[styles.statValue, { color: colors.text }]}>{currentTicketsSold.toLocaleString("vi-VN")} vé</Text>
+              </View>
+              <Text style={[styles.statSubValue, { color: colors.textSecondary }]}>Mục tiêu: {totalTicketsTarget.toLocaleString("vi-VN")} vé</Text>
+            </View>
+            <CircularProgress percentage={ticketsPercent} color="#34C759" />
+          </View>
         </View>
       </ScrollView>
     );
