@@ -1,9 +1,11 @@
 import { Tabs } from "expo-router";
 import { useAppTheme } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export default function StaffTabLayout() {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <Tabs
@@ -23,8 +25,8 @@ export default function StaffTabLayout() {
       <Tabs.Screen
         name="index"
         options={{ 
-          title: "Sự kiện", 
-          tabBarLabel: "Sự kiện",
+          title: t("common.home"), 
+          tabBarLabel: t("common.home"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="calendar-outline" size={size} color={color} />
           )
@@ -33,8 +35,8 @@ export default function StaffTabLayout() {
       <Tabs.Screen
         name="profile"
         options={{ 
-          title: "Tài khoản", 
-          tabBarLabel: "Tài khoản",
+          title: t("common.profile"), 
+          tabBarLabel: t("common.profile"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           )

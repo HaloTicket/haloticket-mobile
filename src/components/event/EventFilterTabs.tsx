@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAppTheme } from "@/theme";
+import { useTranslation } from "react-i18next";
 
 interface EventFilterTabsProps {
   filter: "upcoming" | "past";
@@ -12,6 +13,7 @@ interface EventFilterTabsProps {
 
 export function EventFilterTabs({ filter, onFilterChange, isSearchVisible, onToggleSearch }: EventFilterTabsProps) {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.filterRow}>
@@ -26,7 +28,7 @@ export function EventFilterTabs({ filter, onFilterChange, isSearchVisible, onTog
         onPress={() => onFilterChange("upcoming")}
       >
         <Text style={[styles.filterText, filter === "upcoming" ? { color: "#fff", fontWeight: "600" } : { color: colors.textSecondary }]}>
-          Sắp tới
+          {t("dashboard.upcoming")}
         </Text>
       </TouchableOpacity>
       <TouchableOpacity 
@@ -34,7 +36,7 @@ export function EventFilterTabs({ filter, onFilterChange, isSearchVisible, onTog
         onPress={() => onFilterChange("past")}
       >
         <Text style={[styles.filterText, filter === "past" ? { color: "#fff", fontWeight: "600" } : { color: colors.textSecondary }]}>
-          Đã qua
+          {t("dashboard.past")}
         </Text>
       </TouchableOpacity>
     </View>

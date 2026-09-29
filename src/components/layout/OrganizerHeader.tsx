@@ -2,9 +2,17 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAppTheme } from "@/theme";
+import { useTranslation } from "react-i18next";
+import { changeLanguage } from "@/locales/i18n";
 
 export function OrganizerHeader() {
   const { colors, isDark, toggleTheme } = useAppTheme();
+  const { t, i18n } = useTranslation();
+
+  const handleToggleLanguage = async () => {
+    const newLang = i18n.language === "vi" ? "en" : "vi";
+    await changeLanguage(newLang);
+  };
 
   return (
     <View style={styles.header}>
@@ -18,7 +26,7 @@ export function OrganizerHeader() {
         </View>
       </View>
       <View style={styles.headerActions}>
-        <TouchableOpacity style={styles.headerActionBtn}>
+        <TouchableOpacity style={styles.headerActionBtn} onPress={handleToggleLanguage}>
           <Ionicons name="language-outline" size={22} color={colors.text} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.headerActionBtn} onPress={toggleTheme}>

@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axiosClient from '@/services/api/axiosClient';
 import { useAuth } from '@/hooks/useAuth';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 const SCAN_BOX_SIZE = 260;
@@ -16,6 +17,7 @@ export default function CheckInScannerScreen() {
   const router = useRouter();
   const { colors } = useAppTheme();
   const { user } = useAuth();
+  const { t } = useTranslation();
   
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
@@ -60,9 +62,9 @@ export default function CheckInScannerScreen() {
   if (!permission.granted) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: colors.text, marginBottom: 16 }}>Cần cấp quyền truy cập camera để quét QR</Text>
+        <Text style={{ color: colors.text, marginBottom: 16 }}>{t("dashboard.camera_permission_required")}</Text>
         <TouchableOpacity style={{ backgroundColor: colors.primary, padding: 12, borderRadius: 8 }} onPress={requestPermission}>
-          <Text style={{ color: '#fff' }}>Cấp quyền</Text>
+          <Text style={{ color: '#fff' }}>{t("dashboard.grant_permission")}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -81,15 +83,15 @@ export default function CheckInScannerScreen() {
       }) as any;
       if (checkinData.status === 'VALID' || checkinData.status === 'SUCCESS' || checkinData.status === 'USED') {
         setStatus('success');
-        setMessage(`REDEEM THÀNH CÔNG!\nVé: ${checkinData.ticketTypeName}\n${checkinData.seatName || 'Khu vực tự do'}`);
+        setMessage(`REDEEM ${t("dashboard.redeem_success")}\n${t("dashboard.ticket_label")}${checkinData.ticketTypeName}\n${checkinData.seatName || t("dashboard.free_zone")}`);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } else if (checkinData.status === 'DUPLICATED') {
         setStatus('warning');
-        setMessage(`VÉ ĐÃ ĐƯỢC SỬ DỤNG (REDEEMED)!\nVé: ${checkinData.ticketTypeName}\n${checkinData.seatName || 'Khu vực tự do'}`);
+        setMessage(`${t("dashboard.ticket_already_redeemed")}\n${t("dashboard.ticket_label")}${checkinData.ticketTypeName}\n${checkinData.seatName || t("dashboard.free_zone")}`);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       } else {
         setStatus('error');
-        setMessage('VÉ KHÔNG HỢP LỆ!');
+        setMessage(t("dashboard.invalid_ticket"));
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     } catch (error: any) {
@@ -97,14 +99,14 @@ export default function CheckInScannerScreen() {
       setStatus('error');
       
       const resStatus = error.response?.status;
-      const errorMessage = error.response?.data?.message || 'Lỗi hệ thống hoặc vé không tồn tại';
+      const errorMessage = error.response?.data?.message || t("dashboard.system_error");
       
       if (resStatus === 409) {
-        setMessage('VÉ ĐÃ ĐƯỢC SỬ DỤNG TẠI CỔNG KHÁC (Double-scan)!');
+        setMessage(t("dashboard.ticket_already_used_other_gate"));
       } else if (errorMessage.toLowerCase().includes('does not belong to this event')) {
-        setMessage('VÉ KHÔNG THUỘC SỰ KIỆN NÀY!');
+        setMessage(t("dashboard.ticket_wrong_event"));
       } else if (errorMessage.toLowerCase().includes('does not belong to this showtime')) {
-        setMessage('VÉ KHÔNG THUỘC SUẤT DIỄN NÀY!');
+        setMessage(t("dashboard.ticket_wrong_showtime"));
       } else {
         setMessage(errorMessage.toUpperCase());
       }
@@ -149,7 +151,7 @@ export default function CheckInScannerScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.title}>Quét mã QR</Text>
+        <Text style={styles.title}>{t("dashboard.scan_qr_title")}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -176,7 +178,7 @@ export default function CheckInScannerScreen() {
             style={[styles.scanAgainBtn, { backgroundColor: colors.primary }]}
             onPress={() => setScanned(false)}
           >
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>QUÉT TIẾP TỤC</Text>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{t("dashboard.scan_next")}</Text>
           </TouchableOpacity>
         </View>
       )}

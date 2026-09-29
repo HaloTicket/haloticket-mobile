@@ -9,6 +9,7 @@ import * as WebBrowser from "expo-web-browser";
 import * as AuthSession from "expo-auth-session";
 import { CONFIG } from "@/constants/config";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -28,6 +29,7 @@ export default function RegisterScreen() {
   const router = useRouter();
   const { showAlert } = useModal();
   const { setAuthenticatedToken } = useAuth();
+  const { t } = useTranslation();
 
   const discovery = AuthSession.useAutoDiscovery(`${CONFIG.KEYCLOAK_URL}/realms/${CONFIG.KEYCLOAK_REALM}`);
   const redirectUri = AuthSession.makeRedirectUri({ scheme: "haloticket" });
@@ -67,10 +69,10 @@ export default function RegisterScreen() {
         }
       }).catch((error) => {
         isExchanging.current = false;
-        showAlert("Lỗi", "Đăng ký/Đăng nhập Google thất bại.");
+        showAlert(t("auth.error_title"), t("auth.error_google"));
       });
     } else if (response?.type === "error") {
-      showAlert("Lỗi", "Đã có lỗi xảy ra khi xác thực.");
+      showAlert(t("auth.error_title"), t("auth.auth_error"));
     }
   }, [response]);
 
@@ -156,14 +158,14 @@ export default function RegisterScreen() {
             
             <View style={styles.header}>
               <Text style={[styles.title, { color: theme.text }]}>
-                {step === "form" ? "Đăng ký tài khoản" : step === "otp" ? "Xác minh email" : "Hoàn tất đăng ký"}
+                {step === "form" ? t("auth.register_title") : step === "otp" ? t("auth.register_otp_title") : t("auth.register_done_title")}
               </Text>
               <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
                 {step === "form" 
-                  ? "Tạo tài khoản để bắt đầu quản lý sự kiện" 
+                  ? t("auth.register_welcome") 
                   : step === "otp" 
-                  ? `Nhập mã 6 số đã gửi tới ${email}` 
-                  : "Tài khoản của bạn đã được tạo thành công."}
+                  ? `${t("auth.register_otp_welcome")}${email}` 
+                  : t("auth.register_done_welcome")}
               </Text>
             </View>
 
@@ -171,19 +173,19 @@ export default function RegisterScreen() {
               <View style={styles.doneContainer}>
                 <Ionicons name="checkmark-circle" size={64} color={theme.primary} />
                 <Text style={[styles.doneText, { color: theme.text }]}>
-                  Email của bạn đã được xác minh thành công! Bây giờ bạn có thể đăng nhập.
+                  {t("auth.done_success")}
                 </Text>
                 <TouchableOpacity
                   style={[styles.button, { backgroundColor: theme.primary, width: "100%" }]}
                   onPress={() => router.replace("/(auth)/login")}
                 >
-                  <Text style={styles.buttonText}>Đăng nhập ngay</Text>
+                  <Text style={styles.buttonText}>{t("auth.login_now")}</Text>
                 </TouchableOpacity>
               </View>
             ) : step === "otp" ? (
               <View style={styles.form}>
                 <View style={styles.inputGroup}>
-                  <Text style={[styles.label, { color: theme.text }]}>Mã OTP 6 số</Text>
+                  <Text style={[styles.label, { color: theme.text }]}>{t("auth.otp_label")}</Text>
                   <TextInput
                     style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text, textAlign: "center", fontSize: 20, letterSpacing: 8, paddingLeft: 16 }]}
                     placeholder="000000"
@@ -200,7 +202,7 @@ export default function RegisterScreen() {
                   onPress={handleVerifyOtp}
                   disabled={isLoading || otp.length !== 6}
                 >
-                  {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Xác minh và tạo tài khoản</Text>}
+                  {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{t("auth.verify_btn")}</Text>}
                 </TouchableOpacity>
 
                 <TouchableOpacity 
@@ -209,23 +211,23 @@ export default function RegisterScreen() {
                   disabled={cooldown > 0 || isLoading}
                 >
                   <Text style={[styles.secondaryButtonText, { color: cooldown > 0 ? theme.textSecondary : theme.text }]}>
-                    {cooldown > 0 ? `Gửi lại mã sau ${cooldown}s` : "Gửi lại mã OTP"}
+                    {cooldown > 0 ? `${t("auth.resend_wait")}${cooldown}s` : t("auth.resend_btn")}
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.backLink} onPress={() => setStep("form")}>
-                  <Text style={[styles.backLinkText, { color: theme.textSecondary }]}>← Thay đổi email đăng ký</Text>
+                  <Text style={[styles.backLinkText, { color: theme.textSecondary }]}>{t("auth.back_email")}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
               <View style={styles.form}>
                 <View style={styles.inputGroup}>
-                  <Text style={[styles.label, { color: theme.text }]}>Email</Text>
+                  <Text style={[styles.label, { color: theme.text }]}>{t("auth.email")}</Text>
                   <View style={styles.inputWrapper}>
                     <Ionicons name="mail-outline" size={20} color={theme.textSecondary} style={styles.inputIcon} />
                     <TextInput
                       style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
-                      placeholder="Nhập email của bạn"
+                      placeholder={t("auth.email_placeholder")}
                       placeholderTextColor={theme.textSecondary}
                       value={email}
                       onChangeText={setEmail}
@@ -236,12 +238,12 @@ export default function RegisterScreen() {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={[styles.label, { color: theme.text }]}>Mật khẩu</Text>
+                  <Text style={[styles.label, { color: theme.text }]}>{t("auth.password")}</Text>
                   <View style={styles.inputWrapper}>
                     <Ionicons name="lock-closed-outline" size={20} color={theme.textSecondary} style={styles.inputIcon} />
                     <TextInput
                       style={[styles.input, styles.inputWithEye, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
-                      placeholder="Nhập mật khẩu"
+                      placeholder={t("auth.password_placeholder")}
                       placeholderTextColor={theme.textSecondary}
                       secureTextEntry={!showPassword}
                       value={password}
@@ -254,7 +256,7 @@ export default function RegisterScreen() {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={[styles.label, { color: theme.text }]}>Nhập lại mật khẩu</Text>
+                  <Text style={[styles.label, { color: theme.text }]}>{t("auth.reenter_password")}</Text>
                   <View style={styles.inputWrapper}>
                     <Ionicons name="lock-closed-outline" size={20} color={theme.textSecondary} style={styles.inputIcon} />
                     <TextInput
@@ -266,7 +268,7 @@ export default function RegisterScreen() {
                           ? { borderColor: theme.danger } 
                           : { borderColor: theme.border }
                       ]}
-                      placeholder="Nhập lại mật khẩu"
+                      placeholder={t("auth.reenter_password")}
                       placeholderTextColor={theme.textSecondary}
                       secureTextEntry={!showConfirmPassword}
                       value={confirmPassword}
@@ -277,7 +279,7 @@ export default function RegisterScreen() {
                     </TouchableOpacity>
                   </View>
                   {confirmPassword && password !== confirmPassword ? (
-                    <Text style={[styles.errorText, { color: theme.danger }]}>Mật khẩu xác nhận chưa khớp.</Text>
+                    <Text style={[styles.errorText, { color: theme.danger }]}>{t("auth.password_mismatch")}</Text>
                   ) : null}
                 </View>
 
@@ -289,16 +291,16 @@ export default function RegisterScreen() {
                   onPress={handleRequestOtp}
                   disabled={!canContinue || isLoading}
                 >
-                  {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={[styles.buttonText, { color: canContinue ? "#fff" : theme.textSecondary }]}>Tiếp tục</Text>}
+                  {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={[styles.buttonText, { color: canContinue ? "#fff" : theme.textSecondary }]}>{t("auth.continue")}</Text>}
                 </TouchableOpacity>
 
                 <Text style={[styles.termsText, { color: theme.textSecondary }]}>
-                  Bằng việc đăng ký, bạn đồng ý với <Text style={{ color: theme.primary, fontWeight: "600" }}>Điều khoản dịch vụ</Text> và <Text style={{ color: theme.primary, fontWeight: "600" }}>Chính sách bảo mật</Text> của chúng tôi.
+                  {t("auth.agree_terms")}<Text style={{ color: theme.primary, fontWeight: "600" }}>{t("auth.terms")}</Text>{t("auth.and")}<Text style={{ color: theme.primary, fontWeight: "600" }}>{t("auth.privacy")}</Text>{t("auth.of_us")}
                 </Text>
 
                 <View style={styles.dividerContainer}>
                   <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
-                  <Text style={[styles.dividerText, { color: theme.textSecondary }]}>HOẶC</Text>
+                  <Text style={[styles.dividerText, { color: theme.textSecondary }]}>{t("auth.or")}</Text>
                   <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
                 </View>
 
@@ -307,14 +309,14 @@ export default function RegisterScreen() {
                   onPress={handleGoogleLogin}
                 >
                   <Ionicons name="logo-google" size={20} color={theme.text} />
-                  <Text style={[styles.googleButtonText, { color: theme.text }]}>Tiếp tục với Google</Text>
+                  <Text style={[styles.googleButtonText, { color: theme.text }]}>{t("auth.continue_with_google")}</Text>
                 </TouchableOpacity>
 
                 <View style={styles.footerRow}>
-                  <Text style={[styles.footerText, { color: theme.textSecondary }]}>Đã có tài khoản? </Text>
+                  <Text style={[styles.footerText, { color: theme.textSecondary }]}>{t("auth.has_account")}</Text>
                   <Link href="/(auth)/login" asChild>
                     <TouchableOpacity>
-                      <Text style={[styles.loginLink, { color: theme.primary }]}>Đăng nhập ngay</Text>
+                      <Text style={[styles.loginLink, { color: theme.primary }]}>{t("auth.login_now")}</Text>
                     </TouchableOpacity>
                   </Link>
                 </View>

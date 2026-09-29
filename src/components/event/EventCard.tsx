@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAppTheme } from "@/theme";
 import { EventData } from "@/types/event";
+import { useTranslation } from "react-i18next";
 
 interface EventCardProps {
   event: EventData;
@@ -12,6 +13,7 @@ interface EventCardProps {
 export function EventCard({ event }: EventCardProps) {
   const { colors } = useAppTheme();
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -27,14 +29,14 @@ export function EventCard({ event }: EventCardProps) {
           onPress={() => router.push(`/events/${event.id}`)}
         >
           <Ionicons name="stats-chart-outline" size={18} color={colors.textSecondary} style={styles.actionIcon} />
-          <Text style={[styles.actionText, { color: colors.textSecondary }]}>Quản lý</Text>
+          <Text style={[styles.actionText, { color: colors.textSecondary }]}>{t("dashboard.manage")}</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.actionButton, { backgroundColor: colors.primary }]}
           onPress={() => router.push(`/check-in/${event.id}`)}
         >
           <Ionicons name="scan-outline" size={18} color={"#fff"} style={styles.actionIcon} />
-          <Text style={[styles.actionText, { color: "#fff", fontWeight: "600" }]}>Quét vé</Text>
+          <Text style={[styles.actionText, { color: "#fff", fontWeight: "600" }]}>{t("dashboard.scan_ticket")}</Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -5,6 +5,7 @@ import { useAppTheme } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { useModal } from "@/hooks/useModal";
+import { useTranslation } from "react-i18next";
 import * as WebBrowser from "expo-web-browser";
 import * as AuthSession from "expo-auth-session";
 import { CONFIG } from "@/constants/config";
@@ -19,6 +20,7 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const { colors: theme } = useAppTheme();
   const { showAlert } = useModal();
+  const { t } = useTranslation();
 
   const discovery = AuthSession.useAutoDiscovery(`${CONFIG.KEYCLOAK_URL}/realms/${CONFIG.KEYCLOAK_REALM}`);
   const redirectUri = AuthSession.makeRedirectUri({ scheme: "haloticket" });
@@ -58,16 +60,16 @@ export default function LoginScreen() {
         }
       }).catch((error) => {
         isExchanging.current = false;
-        showAlert("Lỗi", "Đăng nhập Google thất bại.");
+        showAlert(t("auth.error_title"), t("auth.error_google"));
       });
     } else if (response?.type === "error") {
-      showAlert("Lỗi", "Đã có lỗi xảy ra khi xác thực.");
+      showAlert(t("auth.error_title"), "Đã có lỗi xảy ra khi xác thực.");
     }
   }, [response]);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      showAlert("Lỗi", "Vui lòng nhập đầy đủ email và mật khẩu");
+      showAlert(t("auth.error_title"), t("auth.error_empty"));
       return;
     }
     
@@ -75,7 +77,7 @@ export default function LoginScreen() {
     try {
       await login(email, password);
     } catch (error) {
-      showAlert("Đăng nhập thất bại", "Tài khoản hoặc mật khẩu không chính xác.");
+      showAlert(t("auth.login_error"), t("auth.error_login"));
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +85,7 @@ export default function LoginScreen() {
 
   const handleGoogleLogin = () => {
     if (!request) {
-      showAlert("Lỗi", "Đang kết nối tới máy chủ xác thực, vui lòng thử lại sau giây lát.");
+      showAlert(t("auth.error_title"), "Đang kết nối tới máy chủ xác thực, vui lòng thử lại sau giây lát.");
       return;
     }
     promptAsync();
@@ -99,18 +101,18 @@ export default function LoginScreen() {
           <View style={styles.authPanel}>
             
             <View style={styles.header}>
-              <Text style={[styles.title, { color: theme.text }]}>Đăng nhập</Text>
-              <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Chào mừng bạn quay trở lại!</Text>
+              <Text style={[styles.title, { color: theme.text }]}>{t("auth.login_title")}</Text>
+              <Text style={[styles.subtitle, { color: theme.textSecondary }]}>{t("auth.welcome")}</Text>
             </View>
 
             <View style={styles.form}>
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: theme.text }]}>Email</Text>
+                <Text style={[styles.label, { color: theme.text }]}>{t("auth.email")}</Text>
                 <View style={styles.inputWrapper}>
                   <Ionicons name="mail-outline" size={20} color={theme.textSecondary} style={styles.inputIcon} />
                   <TextInput
                     style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
-                    placeholder="Nhập email của bạn"
+                    placeholder={t("auth.email_placeholder")}
                     placeholderTextColor={theme.textSecondary}
                     value={email}
                     onChangeText={setEmail}
@@ -121,12 +123,12 @@ export default function LoginScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: theme.text }]}>Mật khẩu</Text>
+                <Text style={[styles.label, { color: theme.text }]}>{t("auth.password")}</Text>
                 <View style={styles.inputWrapper}>
                   <Ionicons name="lock-closed-outline" size={20} color={theme.textSecondary} style={styles.inputIcon} />
                   <TextInput
                     style={[styles.input, styles.inputWithEye, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
-                    placeholder="Nhập mật khẩu của bạn"
+                    placeholder={t("auth.password_placeholder")}
                     placeholderTextColor={theme.textSecondary}
                     secureTextEntry={!showPassword}
                     value={password}
@@ -153,19 +155,19 @@ export default function LoginScreen() {
                 {isLoading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.buttonText}>Đăng nhập</Text>
+                  <Text style={styles.buttonText}>{t("auth.login_btn")}</Text>
                 )}
               </TouchableOpacity>
 
               <View style={styles.forgotPasswordRow}>
-                <TouchableOpacity onPress={() => showAlert("Thông báo", "Quên mật khẩu")}>
-                  <Text style={[styles.forgotPasswordText, { color: theme.primary }]}>Quên mật khẩu?</Text>
+                <TouchableOpacity onPress={() => showAlert(t("auth.notice_title"), t("auth.forgot_password"))}>
+                  <Text style={[styles.forgotPasswordText, { color: theme.primary }]}>{t("auth.forgot_password")}</Text>
                 </TouchableOpacity>
               </View>
 
               <View style={styles.dividerContainer}>
                 <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
-                <Text style={[styles.dividerText, { color: theme.textSecondary }]}>HOẶC</Text>
+                <Text style={[styles.dividerText, { color: theme.textSecondary }]}>{t("auth.or")}</Text>
                 <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
               </View>
 
@@ -174,14 +176,14 @@ export default function LoginScreen() {
                 onPress={handleGoogleLogin}
               >
                 <Ionicons name="logo-google" size={20} color={theme.text} />
-                <Text style={[styles.googleButtonText, { color: theme.text }]}>Tiếp tục với Google</Text>
+                <Text style={[styles.googleButtonText, { color: theme.text }]}>{t("auth.continue_with_google")}</Text>
               </TouchableOpacity>
 
               <View style={styles.footerRow}>
-                <Text style={[styles.footerText, { color: theme.textSecondary }]}>Chưa có tài khoản? </Text>
+                <Text style={[styles.footerText, { color: theme.textSecondary }]}>{t("auth.no_account")}</Text>
                 <Link href="/(auth)/register" asChild>
                   <TouchableOpacity>
-                    <Text style={[styles.registerLink, { color: theme.primary }]}>Đăng ký ngay</Text>
+                    <Text style={[styles.registerLink, { color: theme.primary }]}>{t("auth.register_now")}</Text>
                   </TouchableOpacity>
                 </Link>
               </View>

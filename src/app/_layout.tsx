@@ -8,6 +8,8 @@ import { ModalProvider } from "@/hooks/useModal";
 import { useFonts } from "expo-font";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
+import "@/locales/i18n"; // initialize i18n
+
 LogBox.ignoreAllLogs(); // hide all warnings and errors from the screen overlay
 
 function RootLayoutNav() {

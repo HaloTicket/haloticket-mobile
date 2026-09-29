@@ -7,11 +7,13 @@ import { useAppTheme } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { eventApi } from "@/services/api/eventApi";
 import { EventData } from "@/types/event";
+import { useTranslation } from "react-i18next";
 
 export default function EventDashboardScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
   const { colors } = useAppTheme();
   const router = useRouter();
+  const { t } = useTranslation();
   
   const [activeTab, setActiveTab] = useState<"revenue" | "checkin" | "orders">("revenue");
   const [isLoading, setIsLoading] = useState(true);
@@ -151,7 +153,7 @@ export default function EventDashboardScreen() {
     if (!event?.showtimes || event.showtimes.length === 0) return null;
     return (
       <View style={{ marginBottom: 16 }}>
-        <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 8 }]}>Suất diễn</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 8 }]}>{t("dashboard.showtime")}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: "row" }}>
           <TouchableOpacity
             style={[
@@ -161,7 +163,7 @@ export default function EventDashboardScreen() {
             onPress={() => setSelectedShowtimeId("")}
           >
             <Text style={[styles.showtimeText, selectedShowtimeId === "" ? { color: "#fff", fontWeight: "600" } : { color: colors.textSecondary }]}>
-              Tất cả
+              {t("dashboard.all")}
             </Text>
           </TouchableOpacity>
           {event.showtimes.map((st) => (
@@ -203,18 +205,18 @@ export default function EventDashboardScreen() {
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} colors={[colors.primary]} />
         }
       >
-        <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 16 }]}>Tổng quan</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 16 }]}>{t("dashboard.overview")}</Text>
         
         {/* Doanh thu */}
         <View style={[styles.card, { backgroundColor: colors.surface, marginBottom: 16 }]}>
           <View style={styles.statRow}>
             <View>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Doanh thu</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t("dashboard.revenue")}</Text>
               <View style={styles.statValueRow}>
                 <View style={[styles.dot, { backgroundColor: colors.primary }]} />
                 <Text style={[styles.statValue, { color: colors.text }]}>{currentRev.toLocaleString("vi-VN")}đ</Text>
               </View>
-              <Text style={[styles.statSubValue, { color: colors.textSecondary }]}>Mục tiêu: {totalTarget.toLocaleString("vi-VN")}đ</Text>
+              <Text style={[styles.statSubValue, { color: colors.textSecondary }]}>{t("dashboard.target")}{totalTarget.toLocaleString("vi-VN")}đ</Text>
             </View>
             <CircularProgress percentage={revPercent} color="#FFC107" />
           </View>
@@ -224,12 +226,12 @@ export default function EventDashboardScreen() {
         <View style={[styles.card, { backgroundColor: colors.surface, marginBottom: 16 }]}>
           <View style={styles.statRow}>
             <View>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Số vé bán ra</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t("dashboard.tickets_sold")}</Text>
               <View style={styles.statValueRow}>
                 <View style={[styles.dot, { backgroundColor: "#34C759" }]} />
-                <Text style={[styles.statValue, { color: colors.text }]}>{currentTicketsSold.toLocaleString("vi-VN")} vé</Text>
+                <Text style={[styles.statValue, { color: colors.text }]}>{currentTicketsSold.toLocaleString("vi-VN")}</Text>
               </View>
-              <Text style={[styles.statSubValue, { color: colors.textSecondary }]}>Mục tiêu: {totalTicketsTarget.toLocaleString("vi-VN")} vé</Text>
+              <Text style={[styles.statSubValue, { color: colors.textSecondary }]}>{t("dashboard.target")}{totalTicketsTarget.toLocaleString("vi-VN")}</Text>
             </View>
             <CircularProgress percentage={ticketsPercent} color="#34C759" />
           </View>
@@ -272,12 +274,12 @@ export default function EventDashboardScreen() {
         <View style={[styles.card, { backgroundColor: colors.surface, marginTop: 16 }]}>
           <View style={styles.statRow}>
             <View>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Đã {checkinTab === 'checkin' ? 'check-in' : 'redeem'}</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{checkinTab === 'checkin' ? t("dashboard.checked_in") : t("dashboard.redeemed")}</Text>
               <View style={styles.statValueRow}>
                 <View style={[styles.dot, { backgroundColor: colors.primary }]} />
-                <Text style={[styles.statValue, { color: colors.text }]}>{checkedInCount.toLocaleString("vi-VN")} vé</Text>
+                <Text style={[styles.statValue, { color: colors.text }]}>{checkedInCount.toLocaleString("vi-VN")}</Text>
               </View>
-              <Text style={[styles.statSubValue, { color: colors.textSecondary }]}>Trên tổng: {totalTicketsSold.toLocaleString("vi-VN")} vé đã bán</Text>
+              <Text style={[styles.statSubValue, { color: colors.textSecondary }]}>{t("dashboard.of_total_sold")}{totalTicketsSold.toLocaleString("vi-VN")}{t("dashboard.tickets_sold_suffix")}</Text>
             </View>
             <CircularProgress percentage={checkinPercent} color={colors.primary} />
           </View>
@@ -286,21 +288,21 @@ export default function EventDashboardScreen() {
           style={{ backgroundColor: colors.primary, padding: 16, borderRadius: 12, marginTop: 16, alignItems: "center" }}
           onPress={() => router.push({ pathname: `/check-in/${eventId}`, params: { showtimeId: selectedShowtimeId, mode: checkinTab } })}
         >
-          <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>Quét mã QR {checkinTab === 'checkin' ? 'Check-in' : 'Redeem'}</Text>
+          <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>{checkinTab === 'checkin' ? t("dashboard.scan_qr_checkin") : t("dashboard.scan_qr_redeem")}</Text>
         </TouchableOpacity>
         
         <View style={{ marginTop: 24, paddingBottom: 40 }}>
-           <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>Lịch sử {checkinTab === 'checkin' ? 'Check-in' : 'Redeem'} mới nhất</Text>
+           <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>{checkinTab === 'checkin' ? t("dashboard.recent_history_checkin") : t("dashboard.recent_history_redeem")}</Text>
            <ScrollView style={{ maxHeight: 300 }} nestedScrollEnabled={true} showsVerticalScrollIndicator={true}>
              {filteredCheckins.map((c, idx) => (
                <View key={idx} style={{ padding: 12, backgroundColor: colors.surface, borderRadius: 8, marginBottom: 8 }}>
-                 <Text style={{ color: colors.text, fontWeight: '600' }}>Loại vé: {c.ticketTypeName}</Text>
+                 <Text style={{ color: colors.text, fontWeight: '600' }}>{t("dashboard.ticket_type")}{c.ticketTypeName}</Text>
                  {c.seatName && <Text style={{ color: colors.textSecondary, marginTop: 4 }}>{c.seatName}</Text>}
                  <Text style={{ color: colors.textSecondary, marginTop: 4, fontSize: 12 }}>{new Date(c.checkedInAt).toLocaleString('vi-VN')}</Text>
                </View>
              ))}
              {filteredCheckins.length === 0 && (
-               <Text style={{ color: colors.textSecondary, fontStyle: 'italic', textAlign: 'center', marginTop: 16 }}>Chưa có lượt {checkinTab === 'checkin' ? 'check-in' : 'redeem'} nào.</Text>
+               <Text style={{ color: colors.textSecondary, fontStyle: 'italic', textAlign: 'center', marginTop: 16 }}>{checkinTab === 'checkin' ? t("dashboard.no_checkin") : t("dashboard.no_redeem")}</Text>
              )}
            </ScrollView>
         </View>
@@ -315,7 +317,7 @@ export default function EventDashboardScreen() {
       <View style={[styles.searchBox, { backgroundColor: colors.surface }]}>
         <Ionicons name="search" size={20} color={colors.textSecondary} />
         <TextInput 
-          placeholder="Tìm đơn hàng..." 
+          placeholder={t("dashboard.search_order")}
           placeholderTextColor={colors.textSecondary}
           style={[styles.searchInput, { color: colors.text }]}
           value={searchOrder}
@@ -328,11 +330,11 @@ export default function EventDashboardScreen() {
       ) : orders.length === 0 ? (
         <View style={{ alignItems: "center", marginTop: 40 }}>
           <Ionicons name="receipt-outline" size={48} color={colors.border} />
-          <Text style={{ color: colors.textSecondary, marginTop: 12 }}>Chưa có đơn hàng nào</Text>
+          <Text style={{ color: colors.textSecondary, marginTop: 12 }}>{t("dashboard.no_orders")}</Text>
         </View>
       ) : (
         <>
-          <Text style={[styles.orderCount, { color: colors.text }]}>Có {orders.length} đơn hàng</Text>
+          <Text style={[styles.orderCount, { color: colors.text }]}>{t("dashboard.has")}{orders.length}{t("dashboard.order_count")}</Text>
           <FlatList
             data={orders}
             keyExtractor={(item) => item.id || item.bookingCode}
@@ -340,20 +342,20 @@ export default function EventDashboardScreen() {
             renderItem={({ item }) => (
               <View style={[styles.orderCard, { backgroundColor: colors.surface }]}>
                 <View style={styles.orderCardHeader}>
-                  <Text style={[styles.orderCustomerName, { color: colors.text }]}>{item.customerName || "Khách hàng"}</Text>
+                  <Text style={[styles.orderCustomerName, { color: colors.text }]}>{item.customerName || t("dashboard.customer")}</Text>
                   <Text style={[styles.orderStatus, { color: item.status === "COMPLETED" ? "#34C759" : colors.textSecondary }]}>
                     {item.status}
                   </Text>
                 </View>
-                <Text style={[styles.orderId, { color: colors.textSecondary }]}>Mã đơn: {item.bookingCode}</Text>
+                <Text style={[styles.orderId, { color: colors.textSecondary }]}>{t("dashboard.order_code")}{item.bookingCode}</Text>
                 <View style={[styles.divider, { backgroundColor: colors.border }]} />
                 <View style={styles.orderInfoRow}>
                   <View style={styles.orderInfoCol}>
-                    <Text style={[styles.orderInfoLabel, { color: colors.textSecondary }]}>Email</Text>
+                    <Text style={[styles.orderInfoLabel, { color: colors.textSecondary }]}>{t("dashboard.email")}</Text>
                     <Text style={[styles.orderInfoValue, { color: colors.text }]}>{item.customerEmail}</Text>
                   </View>
                   <View style={styles.orderInfoCol}>
-                    <Text style={[styles.orderInfoLabel, { color: colors.textSecondary }]}>Tổng tiền</Text>
+                    <Text style={[styles.orderInfoLabel, { color: colors.textSecondary }]}>{t("dashboard.total_amount")}</Text>
                     <Text style={[styles.orderInfoValue, { color: colors.text }]}>{item.totalAmount?.toLocaleString("vi-VN")}đ</Text>
                   </View>
                 </View>
@@ -374,10 +376,10 @@ export default function EventDashboardScreen() {
         </TouchableOpacity>
         <View style={styles.headerInfo}>
           <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
-            {event?.title || "Quản lý sự kiện"}
+            {event?.title || t("dashboard.manage_event")}
           </Text>
           <Text style={[styles.headerDate, { color: colors.textSecondary }]} numberOfLines={1}>
-            {event?.locationName || "Đang tải..."}
+            {event?.locationName || t("dashboard.loading")}
           </Text>
         </View>
       </View>
@@ -388,19 +390,19 @@ export default function EventDashboardScreen() {
           style={[styles.tabNavItem, activeTab === "revenue" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
           onPress={() => handleTabChange("revenue")}
         >
-          <Text style={[styles.tabNavText, activeTab === "revenue" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>Doanh thu</Text>
+          <Text style={[styles.tabNavText, activeTab === "revenue" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>{t("dashboard.revenue")}</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.tabNavItem, activeTab === "checkin" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
           onPress={() => handleTabChange("checkin")}
         >
-          <Text style={[styles.tabNavText, activeTab === "checkin" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>Check-in</Text>
+          <Text style={[styles.tabNavText, activeTab === "checkin" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>{t("dashboard.checkin")}</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.tabNavItem, activeTab === "orders" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
           onPress={() => handleTabChange("orders")}
         >
-          <Text style={[styles.tabNavText, activeTab === "orders" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>Đơn hàng</Text>
+          <Text style={[styles.tabNavText, activeTab === "orders" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>{t("dashboard.orders")}</Text>
         </TouchableOpacity>
       </View>
 

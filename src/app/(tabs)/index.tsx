@@ -7,6 +7,7 @@ import { eventApi } from "@/services/api/eventApi";
 import { EventData } from "@/types/event";
 import { useAuth } from "@/hooks/useAuth";
 import { useFocusEffect } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 import { OrganizerHeader } from "@/components/layout/OrganizerHeader";
 import { EventFilterTabs } from "@/components/event/EventFilterTabs";
@@ -16,6 +17,7 @@ import { SearchBar } from "@/components/ui/SearchBar";
 export default function OrganizerCenterScreen() {
   const { colors } = useAppTheme();
   const { user } = useAuth();
+  const { t } = useTranslation();
   
   const [filter, setFilter] = useState<"upcoming" | "past">("upcoming");
   const [isLoading, setIsLoading] = useState(true);
@@ -79,7 +81,7 @@ export default function OrganizerCenterScreen() {
           <SearchBar 
             value={searchQuery} 
             onChangeText={setSearchQuery} 
-            placeholder="Tìm kiếm sự kiện..." 
+            placeholder={t("dashboard.search_event")} 
           />
         )}
 
@@ -91,7 +93,7 @@ export default function OrganizerCenterScreen() {
         ) : filteredEvents.length === 0 ? (
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
             <Ionicons name="calendar-clear-outline" size={64} color={colors.border} />
-            <Text style={{ marginTop: 16, fontSize: 16, color: colors.textSecondary }}>Không có sự kiện nào.</Text>
+            <Text style={{ marginTop: 16, fontSize: 16, color: colors.textSecondary }}>{t("dashboard.no_events")}</Text>
           </View>
         ) : (
           <FlatList
