@@ -38,7 +38,7 @@ interface AuthRequestMetadata {
 axiosClient.interceptors.response.use(
   (response) => response.data,
   async (error) => {
-    console.warn("API Error:", error.config?.url, error.response?.status);
+    // console.warn("API Error:", error.config?.url, error.response?.status);
     const originalRequest = error.config as (typeof error.config & AuthRequestMetadata) | undefined;
     
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
@@ -65,9 +65,9 @@ axiosClient.interceptors.response.use(
           },
         });
         return retryRes.data;
-        } catch (retryErr: any) {
+      } catch (retryErr: any) {
         if (retryErr?.response?.status === 401) {
-           storage.deleteItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN).catch(console.warn);
+           storage.deleteItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN).catch(() => {});
            import('react-native').then(({ DeviceEventEmitter }) => {
              DeviceEventEmitter.emit('onTokenExpired');
            });
@@ -75,6 +75,15 @@ axiosClient.interceptors.response.use(
         return Promise.reject(retryErr);
       }
     }
+    
+    // for other errors, emit an event to show a modal instead of console warning
+    import('react-native').then(({ DeviceEventEmitter }) => {
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || "Đã xảy ra lỗi khi kết nối máy chủ";
+      // we exclude 401 and 404 from generic modals, as 401 is handled above and 404 is often expected (like not found)
+      if (error.response?.status !== 401 && error.response?.status !== 404) {
+        DeviceEventEmitter.emit('onApiError', { title: "Lỗi kết nối", message: errorMessage });
+      }
+    });
     
     return Promise.reject(error);
   },

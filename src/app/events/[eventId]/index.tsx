@@ -27,6 +27,7 @@ export default function EventDashboardScreen() {
   // checkins
   const [checkins, setCheckins] = useState<any[]>([]);
   const [isCheckinsLoading, setIsCheckinsLoading] = useState(false);
+  const [checkinTab, setCheckinTab] = useState<"checkin" | "redeem">("checkin");
   
   // showtimes
   const [selectedShowtimeId, setSelectedShowtimeId] = useState<string>("");
@@ -57,7 +58,7 @@ export default function EventDashboardScreen() {
     if (!eventId) return;
     setIsCheckinsLoading(true);
     try {
-      const res = await eventApi.getEventCheckins(eventId as string, "");
+      const res = await eventApi.getEventCheckins(eventId as string, selectedShowtimeId);
       setCheckins(res);
     } catch (e) {
       console.error("fetchCheckins error:", e);
@@ -238,7 +239,7 @@ export default function EventDashboardScreen() {
   };
 
   const renderCheckIn = () => {
-    const filteredCheckins = selectedShowtimeId ? checkins.filter(c => c.showtimeId === selectedShowtimeId) : checkins;
+    const filteredCheckins = checkins;
     const totalTicketsSold = analytics?.currentTicketsSold || 0;
     const checkedInCount = filteredCheckins.length;
     let checkinPercent = totalTicketsSold > 0 ? Number(((checkedInCount / totalTicketsSold) * 100).toFixed(1)) : 0;
@@ -254,18 +255,24 @@ export default function EventDashboardScreen() {
       >
         {renderShowtimeSelector()}
         <View style={styles.filterRow}>
-           <TouchableOpacity style={[styles.filterBtn, { backgroundColor: colors.primary }]}>
-             <Text style={[styles.filterText, { color: "#fff", fontWeight: '600' }]}>Check-in ({filteredCheckins.length})</Text>
+           <TouchableOpacity 
+             style={[styles.filterBtn, checkinTab === 'checkin' ? { backgroundColor: colors.primary } : { borderColor: colors.border, borderWidth: 1 }]}
+             onPress={() => setCheckinTab('checkin')}
+           >
+             <Text style={[styles.filterText, checkinTab === 'checkin' ? { color: "#fff", fontWeight: '600' } : { color: colors.textSecondary }]}>Check-in ({filteredCheckins.length})</Text>
            </TouchableOpacity>
-           <TouchableOpacity style={[styles.filterBtn, { borderColor: colors.border, borderWidth: 1 }]}>
-             <Text style={[styles.filterText, { color: colors.textSecondary }]}>Redeem (0)</Text>
+           <TouchableOpacity 
+             style={[styles.filterBtn, checkinTab === 'redeem' ? { backgroundColor: colors.primary } : { borderColor: colors.border, borderWidth: 1 }]}
+             onPress={() => setCheckinTab('redeem')}
+           >
+             <Text style={[styles.filterText, checkinTab === 'redeem' ? { color: "#fff", fontWeight: '600' } : { color: colors.textSecondary }]}>Redeem</Text>
            </TouchableOpacity>
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.surface, marginTop: 16 }]}>
           <View style={styles.statRow}>
             <View>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Đã check-in</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Đã {checkinTab === 'checkin' ? 'check-in' : 'redeem'}</Text>
               <View style={styles.statValueRow}>
                 <View style={[styles.dot, { backgroundColor: colors.primary }]} />
                 <Text style={[styles.statValue, { color: colors.text }]}>{checkedInCount.toLocaleString("vi-VN")} vé</Text>
@@ -277,23 +284,25 @@ export default function EventDashboardScreen() {
         </View>
         <TouchableOpacity 
           style={{ backgroundColor: colors.primary, padding: 16, borderRadius: 12, marginTop: 16, alignItems: "center" }}
-          onPress={() => router.push({ pathname: `/check-in/${eventId}`, params: { showtimeId: selectedShowtimeId } })}
+          onPress={() => router.push({ pathname: `/check-in/${eventId}`, params: { showtimeId: selectedShowtimeId, mode: checkinTab } })}
         >
-          <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>Quét mã QR Check-in</Text>
+          <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>Quét mã QR {checkinTab === 'checkin' ? 'Check-in' : 'Redeem'}</Text>
         </TouchableOpacity>
         
         <View style={{ marginTop: 24, paddingBottom: 40 }}>
-           <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>Lịch sử Check-in mới nhất</Text>
-           {filteredCheckins.slice(0, 20).map((c, idx) => (
-             <View key={idx} style={{ padding: 12, backgroundColor: colors.surface, borderRadius: 8, marginBottom: 8 }}>
-               <Text style={{ color: colors.text, fontWeight: '600' }}>Loại vé: {c.ticketTypeName}</Text>
-               {c.seatName && <Text style={{ color: colors.textSecondary, marginTop: 4 }}>Ghế: {c.seatName}</Text>}
-               <Text style={{ color: colors.textSecondary, marginTop: 4, fontSize: 12 }}>{new Date(c.checkedInAt).toLocaleString('vi-VN')}</Text>
-             </View>
-           ))}
-           {filteredCheckins.length === 0 && (
-             <Text style={{ color: colors.textSecondary, fontStyle: 'italic', textAlign: 'center', marginTop: 16 }}>Chưa có lượt check-in nào.</Text>
-           )}
+           <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>Lịch sử {checkinTab === 'checkin' ? 'Check-in' : 'Redeem'} mới nhất</Text>
+           <ScrollView style={{ maxHeight: 300 }} nestedScrollEnabled={true} showsVerticalScrollIndicator={true}>
+             {filteredCheckins.map((c, idx) => (
+               <View key={idx} style={{ padding: 12, backgroundColor: colors.surface, borderRadius: 8, marginBottom: 8 }}>
+                 <Text style={{ color: colors.text, fontWeight: '600' }}>Loại vé: {c.ticketTypeName}</Text>
+                 {c.seatName && <Text style={{ color: colors.textSecondary, marginTop: 4 }}>{c.seatName}</Text>}
+                 <Text style={{ color: colors.textSecondary, marginTop: 4, fontSize: 12 }}>{new Date(c.checkedInAt).toLocaleString('vi-VN')}</Text>
+               </View>
+             ))}
+             {filteredCheckins.length === 0 && (
+               <Text style={{ color: colors.textSecondary, fontStyle: 'italic', textAlign: 'center', marginTop: 16 }}>Chưa có lượt {checkinTab === 'checkin' ? 'check-in' : 'redeem'} nào.</Text>
+             )}
+           </ScrollView>
         </View>
       </ScrollView>
     );

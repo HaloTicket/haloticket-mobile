@@ -7,6 +7,7 @@ import { jwtDecode } from "jwt-decode";
 import { useModal } from "@/hooks/useModal";
 
 interface User {
+  id?: string;
   name?: string;
   email?: string;
   picture?: string;
@@ -41,6 +42,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       setUser({
+        id: decoded.sub,
         name: decoded.name || decoded.given_name || decoded.preferred_username,
         email: decoded.email,
         picture: decoded.picture,
@@ -71,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
     checkToken();
 
-    const subscription = DeviceEventEmitter.addListener('onTokenExpired', () => {
+    const tokenExpiredSub = DeviceEventEmitter.addListener('onTokenExpired', () => {
       showAlert(
         "Phiên đăng nhập hết hạn",
         "Vui lòng đăng nhập lại để tiếp tục.",
@@ -79,8 +81,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       );
     });
 
+    const apiErrorSub = DeviceEventEmitter.addListener('onApiError', (errorData: { title: string, message: string }) => {
+      showAlert(
+        errorData.title,
+        errorData.message
+      );
+    });
+
     return () => {
-      subscription.remove();
+      tokenExpiredSub.remove();
+      apiErrorSub.remove();
     };
   }, []);
 

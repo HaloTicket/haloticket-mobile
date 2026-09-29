@@ -19,7 +19,7 @@ export const eventApi = {
       }
       return [];
     } catch (err) {
-      console.warn("Failed to fetch events from backend API:", err);
+      // console.warn("Failed to fetch events from backend API:", err);
       return [];
     }
   },
@@ -41,7 +41,7 @@ export const eventApi = {
       }
       return [];
     } catch (err) {
-      console.warn("Failed to fetch my events from backend API:", err);
+      // console.warn("Failed to fetch my events from backend API:", err);
       return [];
     }
   },
@@ -58,7 +58,7 @@ export const eventApi = {
       }
       return null;
     } catch (err) {
-      console.warn("Failed to fetch event details by id:", err);
+      // console.warn("Failed to fetch event details by id:", err);
       return null;
     }
   },
@@ -71,7 +71,7 @@ export const eventApi = {
       });
       return response.data || response;
     } catch (err) {
-      console.error("Failed to get event analytics:", err);
+      // console.error("Failed to get event analytics:", err);
       return null;
     }
   },
@@ -84,7 +84,7 @@ export const eventApi = {
       });
       return response.data || response;
     } catch (err) {
-      console.error("Failed to get event bookings:", err);
+      // console.error("Failed to get event bookings:", err);
       return { content: [], totalElements: 0, totalPages: 0 };
     }
   },
@@ -97,7 +97,7 @@ export const eventApi = {
       });
       return response.data || response || [];
     } catch (err) {
-      console.error("Failed to get event checkins:", err);
+      // console.error("Failed to get event checkins:", err);
       return [];
     }
   },

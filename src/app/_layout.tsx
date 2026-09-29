@@ -2,11 +2,13 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, LogBox } from "react-native";
 import { useAppTheme, ThemeProvider } from "@/theme";
 import { ModalProvider } from "@/hooks/useModal";
 import { useFonts } from "expo-font";
 import Ionicons from "@expo/vector-icons/Ionicons";
+
+LogBox.ignoreAllLogs(); // hide all warnings and errors from the screen overlay
 
 function RootLayoutNav() {
   const { isAuthenticated, isLoading } = useAuth();
