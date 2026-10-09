@@ -1,15 +1,20 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useAppTheme } from "@/theme";
 import { useTranslation } from "react-i18next";
 import { changeLanguage } from "@/locales/i18n";
 
-/** Thanh đầu trang của khu vực tổ chức, có nút đổi giao diện sáng/tối và đổi ngôn ngữ. */
-export function OrganizerHeader() {
-  const { colors, isDark, toggleTheme } = useAppTheme();
-  const { i18n } = useTranslation();
+interface OrganizerHeaderProps {
+  unreadCount?: number;
+}
 
-  /** Chuyển ngôn ngữ giữa tiếng Việt và tiếng Anh. */
+/** Thanh đầu trang của khu vực tổ chức, có nút hộp thư thông báo, đổi giao diện sáng/tối và đổi ngôn ngữ. */
+export function OrganizerHeader({ unreadCount = 0 }: OrganizerHeaderProps) {
+  const { colors, isDark, toggleTheme } = useAppTheme();
+  const { i18n, t } = useTranslation();
+  const router = useRouter();
+
   const handleToggleLanguage = async () => {
     const newLang = i18n.language === "vi" ? "en" : "vi";
     await changeLanguage(newLang);
@@ -19,7 +24,7 @@ export function OrganizerHeader() {
     <View style={styles.header}>
       <View style={[styles.headerLeft, { flex: 1 }]}>
         <View style={[styles.logoIconContainer, { backgroundColor: colors.primary }]}>
-          <Ionicons name="ticket" size={18} color="#fff" style={{ transform: [{ rotate: '-12deg' }] }} />
+          <Ionicons name="ticket" size={18} color="#fff" style={{ transform: [{ rotate: "-12deg" }] }} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={[styles.logoText, { color: colors.primary }]} numberOfLines={1}>HaloTicket</Text>
@@ -27,6 +32,19 @@ export function OrganizerHeader() {
         </View>
       </View>
       <View style={styles.headerActions}>
+        <TouchableOpacity
+          style={styles.headerActionBtn}
+          onPress={() => router.push("/notifications")}
+          accessibilityRole="button"
+          accessibilityLabel={t("notifications.title")}
+        >
+          <Ionicons name="notifications-outline" size={22} color={colors.text} />
+          {unreadCount > 0 && (
+            <View style={[styles.unreadBadge, { backgroundColor: colors.danger }]}>
+              <Text style={styles.unreadBadgeText}>{unreadCount > 99 ? "99+" : unreadCount}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
         <TouchableOpacity style={styles.headerActionBtn} onPress={handleToggleLanguage}>
           <Ionicons name="language-outline" size={22} color={colors.text} />
         </TouchableOpacity>
@@ -39,24 +57,22 @@ export function OrganizerHeader() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 },
+  headerLeft: { flexDirection: "row", alignItems: "center" },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 12 },
+  headerActionBtn: { padding: 4, position: "relative" },
+  unreadBadge: {
+    position: "absolute",
+    top: 0,
+    right: -2,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    paddingHorizontal: 3,
     alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
+    justifyContent: "center",
   },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  headerActionBtn: {
-    padding: 4,
-  },
+  unreadBadgeText: { color: "#fff", fontSize: 10, fontWeight: "700" },
   logoIconContainer: {
     width: 32,
     height: 32,
@@ -70,14 +86,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  logoText: {
-    fontSize: 22,
-    fontWeight: "900",
-    letterSpacing: -0.5,
-    marginRight: 12,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
+  logoText: { fontSize: 22, fontWeight: "900", letterSpacing: -0.5, marginRight: 12 },
+  headerTitle: { fontSize: 18, fontWeight: "bold" },
 });

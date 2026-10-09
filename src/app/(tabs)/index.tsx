@@ -13,6 +13,8 @@ import { OrganizerHeader } from "@/components/layout/OrganizerHeader";
 import { EventFilterTabs } from "@/components/event/EventFilterTabs";
 import { EventCard } from "@/components/event/EventCard";
 import { SearchBar } from "@/components/ui/SearchBar";
+import { notificationApi } from "@/services/api/notificationApi";
+import { countUnreadNotifications } from "@/utils/notifications";
 import { logError } from "@/utils/log";
 
 /**
@@ -27,6 +29,7 @@ export default function OrganizerCenterScreen() {
   const [filter, setFilter] = useState<"upcoming" | "past">("upcoming");
   const [isLoading, setIsLoading] = useState(true);
   const [events, setEvents] = useState<EventData[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -43,10 +46,25 @@ export default function OrganizerCenterScreen() {
     }
   };
 
+  /** Tải số lượng thông báo STAFF chưa đọc cho huy hiệu ở thanh tiêu đề. */
+  const fetchUnreadNotifications = async () => {
+    if (!user?.id) {
+      setUnreadCount(0);
+      return;
+    }
+    try {
+      const items = await notificationApi.getStaffNotifications(user.id);
+      setUnreadCount(countUnreadNotifications(items));
+    } catch {
+      // Bỏ qua lỗi tải huy hiệu thông báo trên trang chủ để không làm gián đoạn danh sách sự kiện
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       fetchEvents();
-    }, [user])
+      fetchUnreadNotifications();
+    }, [user?.id])
   );
 
   /** Phân sự kiện vào tab `past` nếu đã quá giờ kết thúc hoặc trạng thái là kết thúc, ngược lại là `upcoming`. */
@@ -74,46 +92,48 @@ export default function OrganizerCenterScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <View style={styles.container}>
-        <OrganizerHeader />
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+        <View style={styles.container}>
+          <OrganizerHeader unreadCount={unreadCount} />
 
-        <EventFilterTabs 
-          filter={filter} 
-          onFilterChange={setFilter} 
-          isSearchVisible={isSearchVisible}
-          onToggleSearch={handleToggleSearch}
-        />
-
-        {isSearchVisible && (
-          <SearchBar 
-            value={searchQuery} 
-            onChangeText={setSearchQuery} 
-            placeholder={t("dashboard.search_event")} 
+          <EventFilterTabs 
+            filter={filter} 
+            onFilterChange={setFilter} 
+            isSearchVisible={isSearchVisible}
+            onToggleSearch={handleToggleSearch}
           />
-        )}
 
-        {/* Event List */}
-        {isLoading ? (
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <ActivityIndicator size="large" color={colors.primary} />
-          </View>
-        ) : filteredEvents.length === 0 ? (
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Ionicons name="calendar-clear-outline" size={64} color={colors.border} />
-            <Text style={{ marginTop: 16, fontSize: 16, color: colors.textSecondary }}>{t("dashboard.no_events")}</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={filteredEvents}
-            keyExtractor={(item) => item.id || Math.random().toString()}
-            renderItem={({ item }) => <EventCard event={item} />}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-      </View>
-    </SafeAreaView>
+          {isSearchVisible && (
+            <SearchBar 
+              value={searchQuery} 
+              onChangeText={setSearchQuery} 
+              placeholder={t("dashboard.search_event")} 
+            />
+          )}
+
+          {/* Event List */}
+          {isLoading ? (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          ) : filteredEvents.length === 0 ? (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+              <Ionicons name="calendar-clear-outline" size={64} color={colors.border} />
+              <Text style={{ marginTop: 16, fontSize: 16, color: colors.textSecondary }}>{t("dashboard.no_events")}</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredEvents}
+              keyExtractor={(item) => item.id || Math.random().toString()}
+              renderItem={({ item, index }) => <EventCard event={item} />}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
+      </SafeAreaView>
+    </View>
   );
 }
 
