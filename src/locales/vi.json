@@ -1,4 +1,77 @@
 {
+  "checkinAssistant": {
+    "title": "Trợ lý AI check-in",
+    "open": "Trò chuyện cùng trợ lý AI",
+    "wholeEvent": "Toàn sự kiện",
+    "selectedShowtime": "Suất diễn đang chọn",
+    "assignedScope": "Sự kiện được phân công",
+    "assignedWelcome": "Bạn có thể hỏi mình đang phụ trách sự kiện nào, tình hình check-in hoặc cách xử lý lỗi tại cổng.",
+    "suggestAssigned": "Tôi được phân công sự kiện nào?",
+    "chooseEvent": "Chọn sự kiện để xem số liệu",
+    "noAssignedEvents": "Bạn chưa có sự kiện được phân công.",
+    "expand": "Phóng to trợ lý",
+    "collapse": "Thu nhỏ trợ lý",
+    "chat": "Chat AI",
+    "stats": "Xem số liệu",
+    "guide": "Lỗi thường gặp",
+    "welcome": "Bạn có thể hỏi về số liệu check-in, quy trình soát vé hoặc cách xử lý lỗi tại cổng.",
+    "placeholder": "Hỏi về check-in…",
+    "send": "Gửi câu hỏi",
+    "startVoice": "Nhập bằng giọng nói",
+    "stopVoice": "Dừng nhập giọng nói",
+    "voiceStarting": "Đang mở micrô…",
+    "voiceListening": "Đang nghe… Hãy đọc câu hỏi.",
+    "voiceStopping": "Đang chuyển giọng nói thành văn bản…",
+    "voicePermission": "Hãy cho phép dùng micrô và nhận diện giọng nói rồi thử lại.",
+    "voiceUnavailable": "Thiết bị hoặc trình duyệt này chưa hỗ trợ nhập giọng nói.",
+    "voiceNoSpeech": "Chưa nghe rõ câu hỏi. Hãy thử nói lại.",
+    "voiceFailed": "Không nhận diện được giọng nói. Hãy thử lại hoặc nhập bằng bàn phím.",
+    "typing": "Trợ lý đang trả lời",
+    "statsTitle": "Số liệu check-in",
+    "guideTitle": "Cách xử lý lỗi check-in",
+    "loadingStats": "Đang tải số liệu check-in",
+    "refresh": "Làm mới",
+    "total": "Tổng vé",
+    "checkedIn": "Đã check-in",
+    "remaining": "Chưa check-in",
+    "noShowtimeStats": "Chưa có số liệu cho suất diễn này.",
+    "accessError": "Tài khoản chưa có quyền xem check-in cho sự kiện này. Hãy kiểm tra phân công với ban tổ chức.",
+    "rateLimit": "Bạn đã gửi nhiều câu hỏi. Vui lòng thử lại sau.",
+    "chatError": "Chưa nhận được câu trả lời. Bạn có thể gửi lại câu hỏi.",
+    "statsError": "Chưa tải được số liệu. Hãy kiểm tra kết nối và thử lại.",
+    "suggestStats": "Còn bao nhiêu vé chưa check-in?",
+    "suggestDuplicate": "Xử lý vé đã dùng thế nào?",
+    "guides": {
+      "used": {
+        "title": "Vé đã check-in",
+        "detail": "Kiểm tra lần quét trước trong lịch sử sự kiện. Nếu có tranh chấp, báo trưởng ca xác minh trước khi cho khách vào."
+      },
+      "wrongScope": {
+        "title": "Sai sự kiện hoặc suất diễn",
+        "detail": "Đối chiếu tên sự kiện và giờ trên vé. Mở đúng sự kiện và suất diễn trong app rồi quét lại."
+      },
+      "locked": {
+        "title": "Vé bị khóa hoặc không tìm thấy",
+        "detail": "Yêu cầu khách mở vé gốc trong HaloTicket. Nếu app vẫn báo lỗi, chuyển cho ban tổ chức kiểm tra trạng thái vé."
+      },
+      "window": {
+        "title": "Ngoài giờ check-in",
+        "detail": "Đối chiếu giờ mở và đóng cổng của suất diễn với ban tổ chức. Quét lại khi cổng được mở."
+      },
+      "access": {
+        "title": "Chưa có quyền check-in",
+        "detail": "Kiểm tra tài khoản đang đăng nhập. Nhờ ban tổ chức xác nhận phân công của bạn cho sự kiện."
+      },
+      "camera": {
+        "title": "Camera không quét được",
+        "detail": "Cấp quyền camera trong cài đặt, lau ống kính, tăng sáng màn hình vé và giữ mã QR trong khung quét."
+      },
+      "network": {
+        "title": "Mất mạng hoặc lỗi hệ thống",
+        "detail": "Kiểm tra Wi-Fi hoặc dữ liệu di động rồi thử lại. Chờ màn hình quét xác nhận kết quả trước khi cho khách vào."
+      }
+    }
+  },
   "common": {
     "logout": "Đăng xuất",
     "home": "Trang chủ",

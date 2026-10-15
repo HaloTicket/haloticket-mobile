@@ -1,4 +1,77 @@
 {
+  "checkinAssistant": {
+    "title": "AI check-in assistant",
+    "open": "Chat with the AI assistant",
+    "wholeEvent": "Entire event",
+    "selectedShowtime": "Selected showtime",
+    "assignedScope": "Assigned events",
+    "assignedWelcome": "Ask which events you're assigned to, how check-in is going, or what to do about common gate issues.",
+    "suggestAssigned": "Which events am I assigned to?",
+    "chooseEvent": "Choose an event to view stats",
+    "noAssignedEvents": "You have no assigned events.",
+    "expand": "Expand assistant",
+    "collapse": "Minimize assistant",
+    "chat": "AI chat",
+    "stats": "View stats",
+    "guide": "Common errors",
+    "welcome": "Ask about check-in counts, how to scan tickets, or what to do when something goes wrong at the gate.",
+    "placeholder": "Ask about check-in…",
+    "send": "Send question",
+    "startVoice": "Enter by voice",
+    "stopVoice": "Stop voice input",
+    "voiceStarting": "Opening microphone…",
+    "voiceListening": "Listening… Say your question.",
+    "voiceStopping": "Transcribing speech…",
+    "voicePermission": "Allow microphone and speech recognition access, then try again.",
+    "voiceUnavailable": "Voice input is unavailable on this device or browser.",
+    "voiceNoSpeech": "No clear speech detected. Please try again.",
+    "voiceFailed": "Speech could not be recognized. Try again or type your question.",
+    "typing": "The assistant is responding",
+    "statsTitle": "Check-in stats",
+    "guideTitle": "Check-in troubleshooting",
+    "loadingStats": "Loading check-in stats",
+    "refresh": "Refresh",
+    "total": "Total tickets",
+    "checkedIn": "Checked in",
+    "remaining": "Still to check in",
+    "noShowtimeStats": "Stats are unavailable for this showtime.",
+    "accessError": "Your account lacks check-in access for this event. Ask the organizer to verify your assignment.",
+    "rateLimit": "You've sent too many questions. Try again later.",
+    "chatError": "A reply couldn't be received. You can send your question again.",
+    "statsError": "Stats couldn't be loaded. Check your connection and try again.",
+    "suggestStats": "How many tickets still need checking in?",
+    "suggestDuplicate": "What should I do with a used ticket?",
+    "guides": {
+      "used": {
+        "title": "Ticket already checked in",
+        "detail": "Check the event history for the earlier scan. If there's a dispute, ask the shift lead to verify it before admitting the guest."
+      },
+      "wrongScope": {
+        "title": "Wrong event or showtime",
+        "detail": "Check the event name and time on the ticket. Open the matching event and showtime in the app, then scan again."
+      },
+      "locked": {
+        "title": "Ticket locked or missing",
+        "detail": "Ask the guest to open the original HaloTicket ticket. If the error persists, ask the organizer to verify the ticket status."
+      },
+      "window": {
+        "title": "Outside the check-in window",
+        "detail": "Verify the gate hours for this showtime with the organizer. Try again when the gate opens."
+      },
+      "access": {
+        "title": "No check-in permission",
+        "detail": "Check which account is signed in. Ask the organizer to verify your assignment for the event."
+      },
+      "camera": {
+        "title": "Camera won't scan",
+        "detail": "Grant camera access in settings, clean the lens, brighten the ticket screen, and hold the QR code inside the scan frame."
+      },
+      "network": {
+        "title": "Offline or system error",
+        "detail": "Check Wi-Fi or mobile data and retry. Wait for the scanner to confirm the result before admitting the guest."
+      }
+    }
+  },
   "common": {
     "logout": "Logout",
     "home": "Home",
