@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, FlatList, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Circle } from 'react-native-svg';
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { useAppTheme } from "@/theme";
+import { CheckinAssistantContext } from "@/components/event/CheckinAssistantContext";
 import { Ionicons } from "@expo/vector-icons";
 import { eventApi } from "@/services/api/eventApi";
 import { EventData } from "@/types/event";
@@ -43,6 +44,12 @@ export default function EventDashboardScreen() {
   
   // suất diễn
   const [selectedShowtimeId, setSelectedShowtimeId] = useState<string>("");
+  const { setDashboardScope } = useContext(CheckinAssistantContext);
+  const selectedShowtimeTitle = event?.showtimes?.find(showtime => showtime.id === selectedShowtimeId)?.name;
+
+  useFocusEffect(useCallback(() => {
+    setDashboardScope({ eventId, eventTitle: event?.title, showtimeId: selectedShowtimeId, showtimeTitle: selectedShowtimeTitle });
+  }, [eventId, event?.title, selectedShowtimeId, selectedShowtimeTitle, setDashboardScope]));
 
   /**
    * Tải thông tin sự kiện và thống kê 30 ngày; nếu thống kê bị từ chối (403) thì đánh dấu và chuyển sang tab check-in.

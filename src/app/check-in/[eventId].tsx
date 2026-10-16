@@ -146,14 +146,14 @@ export default function CheckInScannerScreen() {
 
   return (
     <View style={styles.container}>
-      <CameraView
+      {!assistantOpen && <CameraView
         style={StyleSheet.absoluteFill}
         facing="back"
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
         barcodeScannerSettings={{
           barcodeTypes: ["qr"],
         }}
-      />
+      />}
       
       {/* Dark Overlay with Transparent Hole */}
       <View style={styles.overlayContainer}>
