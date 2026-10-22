@@ -81,14 +81,18 @@ export default function CheckInScannerScreen() {
         deviceInfo: Platform.OS + ' ' + Platform.Version,
         staffAssignmentId: user?.id || user?.email || 'unknown-staff'
       }) as any;
-      if (checkinData.status === 'VALID' || checkinData.status === 'SUCCESS' || checkinData.status === 'USED') {
+      if (checkinData.status === 'VALID' || checkinData.status === 'SUCCESS' || checkinData.code === 'SUCCESS') {
         setStatus('success');
         setMessage(`REDEEM ${t("dashboard.redeem_success")}\n${t("dashboard.ticket_label")}${checkinData.ticketTypeName}\n${checkinData.seatName || t("dashboard.free_zone")}`);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      } else if (checkinData.status === 'DUPLICATED') {
+      } else if (checkinData.status === 'DUPLICATED' || checkinData.code === 'ALREADY_USED') {
         setStatus('warning');
         setMessage(`${t("dashboard.ticket_already_redeemed")}\n${t("dashboard.ticket_label")}${checkinData.ticketTypeName}\n${checkinData.seatName || t("dashboard.free_zone")}`);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      } else if (checkinData.code === 'TICKET_LOCKED') {
+        setStatus('error');
+        setMessage(`${t("dashboard.ticket_locked")}\n${t("dashboard.ticket_label")}${checkinData.ticketTypeName || ''}\n${checkinData.seatName || t("dashboard.free_zone")}`);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       } else {
         setStatus('error');
         setMessage(t("dashboard.invalid_ticket"));
@@ -99,14 +103,23 @@ export default function CheckInScannerScreen() {
       setStatus('error');
       
       const resStatus = error.response?.status;
+      const errorCode = error.response?.data?.code;
       const errorMessage = error.response?.data?.message || t("dashboard.system_error");
       
-      if (resStatus === 409) {
-        setMessage(t("dashboard.ticket_already_used_other_gate"));
-      } else if (errorMessage.toLowerCase().includes('does not belong to this event')) {
+      if (errorCode === 'OUTSIDE_CHECKIN_WINDOW') {
+        setMessage(t("dashboard.ticket_outside_window"));
+      } else if (errorCode === 'TICKET_NOT_FOUND') {
+        setMessage(t("dashboard.ticket_not_found"));
+      } else if (errorCode === 'WRONG_EVENT' || errorMessage.toLowerCase().includes('does not belong to this event')) {
         setMessage(t("dashboard.ticket_wrong_event"));
-      } else if (errorMessage.toLowerCase().includes('does not belong to this showtime')) {
+      } else if (errorCode === 'WRONG_SHOWTIME' || errorMessage.toLowerCase().includes('does not belong to this showtime')) {
         setMessage(t("dashboard.ticket_wrong_showtime"));
+      } else if (errorCode === 'ALREADY_USED') {
+        setMessage(t("dashboard.ticket_already_redeemed"));
+      } else if (errorCode === 'TICKET_LOCKED') {
+        setMessage(t("dashboard.ticket_locked"));
+      } else if (resStatus === 409 || errorCode === 'CONCURRENCY_CONFLICT') {
+        setMessage(t("dashboard.ticket_already_used_other_gate"));
       } else {
         setMessage(errorMessage.toUpperCase());
       }
