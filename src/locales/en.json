@@ -120,5 +120,13 @@
     "free_zone": "Free Zone",
     "scan_qr_title": "Scan QR Code",
     "scan_next": "SCAN NEXT"
+  },
+  "errors": {
+    "connection_error_title": "Connection Error",
+    "cannot_connect_server_title": "Cannot Connect to Server",
+    "network_error_message": "Please check your Wi-Fi connection and server address.",
+    "network_error_dev_hint": "Server: {{host}}",
+    "server_error_fallback": "An error occurred while connecting to the server"
   }
 }
+

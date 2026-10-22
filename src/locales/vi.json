@@ -120,5 +120,13 @@
     "free_zone": "Khu vực tự do",
     "scan_qr_title": "Quét mã QR",
     "scan_next": "QUÉT TIẾP TỤC"
+  },
+  "errors": {
+    "connection_error_title": "Lỗi kết nối",
+    "cannot_connect_server_title": "Không kết nối được máy chủ",
+    "network_error_message": "Vui lòng kiểm tra lại kết nối Wi-Fi và địa chỉ máy chủ.",
+    "network_error_dev_hint": "Máy chủ: {{host}}",
+    "server_error_fallback": "Đã xảy ra lỗi khi kết nối máy chủ"
   }
 }
+

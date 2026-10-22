@@ -15,7 +15,7 @@ export const Button: React.FC<ButtonProps> = ({ title, variant = "primary", styl
       case "secondary":
         return colors.secondary;
       case "danger":
-        return colors.accent;
+        return colors.danger;
       default:
         return colors.primary;
     }
