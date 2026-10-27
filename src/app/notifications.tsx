@@ -17,6 +17,8 @@ import { useRouter, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useAppTheme } from "@/theme";
+import { ScreenBackground } from "@/components/layout/ScreenBackground";
+import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 import { useAuth } from "@/hooks/useAuth";
 import { useModal } from "@/hooks/useModal";
 import { notificationApi } from "@/services/api/notificationApi";
@@ -202,7 +204,9 @@ export default function StaffNotificationsScreen() {
         <View style={[styles.cardFooter, { borderTopColor: colors.border }]}>
           <Text style={[styles.timeText, { color: colors.textSecondary }]}>{formattedTime}</Text>
           {isUnread && (
-            <TouchableOpacity style={[styles.markReadBtn, { backgroundColor: colors.primary }]}
+            <AnimatedPressable
+              scaleTo={0.94}
+              contentStyle={[styles.markReadBtn, { backgroundColor: colors.primary }]}
               onPress={() => handleMarkAsRead(item.id)}
               disabled={isMarking}
               accessibilityRole="button"
@@ -216,7 +220,7 @@ export default function StaffNotificationsScreen() {
                   <Text style={styles.markReadBtnText}>{t("notifications.mark_read")}</Text>
                 </>
               )}
-            </TouchableOpacity>
+            </AnimatedPressable>
           )}
         </View>
       </View>
@@ -224,7 +228,7 @@ export default function StaffNotificationsScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
+    <ScreenBackground>
       <SafeAreaView style={styles.safeArea}>
         <Animated.View
           style={[
@@ -232,15 +236,17 @@ export default function StaffNotificationsScreen() {
             { opacity: inboxEntrance, paddingHorizontal: 16 },
           ]}
         >
-        <View style={[styles.header, false]}>
-          <TouchableOpacity style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        <View style={styles.header}>
+          <AnimatedPressable
+            scaleTo={0.88}
+            contentStyle={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
             onPress={() => router.back()}
             accessibilityRole="button"
           >
             <Ionicons name="arrow-back" size={20} color={colors.text} />
-          </TouchableOpacity>
+          </AnimatedPressable>
           <View style={styles.headerTextGroup}>
-            <Text style={[styles.headerTitle, { color: colors.text }, false]} numberOfLines={1}>
+            <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
               {t("notifications.title")}
             </Text>
             <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
@@ -251,8 +257,7 @@ export default function StaffNotificationsScreen() {
             style={[
               styles.unreadSummaryPill,
               {
-                
-                backgroundColor: unreadCount > 0 ? `${colors.primary}1A` : colors.surface,
+                                backgroundColor: unreadCount > 0 ? `${colors.primary}1A` : colors.surface,
                 borderColor: unreadCount > 0 ? colors.primary : colors.border,
               },
             ]}
@@ -325,7 +330,7 @@ export default function StaffNotificationsScreen() {
         )}
       </Animated.View>
     </SafeAreaView>
-    </View>
+    </ScreenBackground>
   );
 }
 
