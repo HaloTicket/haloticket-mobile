@@ -60,6 +60,9 @@
     "auth_error": "An error occurred during authentication."
   },
   "dashboard": {
+    "no_stats_permission": "You do not have permission to view statistics",
+    "checkin_forbidden": "You do not have permission to scan tickets for this event",
+    "checkin_access_unavailable": "Could not verify your scan permission, please try again",
     "events": "Events",
     "scan_qr": "Scan QR",
     "revenue": "Revenue",

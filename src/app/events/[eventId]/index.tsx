@@ -20,6 +20,8 @@ export default function EventDashboardScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [event, setEvent] = useState<EventData | null>(null);
   const [analytics, setAnalytics] = useState<any>(null);
+  // the person may scan tickets
+  const [analyticsDenied, setAnalyticsDenied] = useState(false);
   
   // orders
   const [orders, setOrders] = useState<any[]>([]);
@@ -47,7 +49,10 @@ export default function EventDashboardScreen() {
         eventApi.getEventAnalytics(eventId as string, "30d"),
       ]);
       setEvent(eventRes);
-      setAnalytics(analyticsRes);
+      const denied = analyticsRes?.forbidden === true;
+      setAnalyticsDenied(denied);
+      setAnalytics(denied ? null : analyticsRes);
+      if (denied) setActiveTab("checkin");
     } catch (e) {
       console.error("fetchDashboardData error:", e);
     } finally {
@@ -279,9 +284,13 @@ export default function EventDashboardScreen() {
                 <View style={[styles.dot, { backgroundColor: colors.primary }]} />
                 <Text style={[styles.statValue, { color: colors.text }]}>{checkedInCount.toLocaleString("vi-VN")}</Text>
               </View>
-              <Text style={[styles.statSubValue, { color: colors.textSecondary }]}>{t("dashboard.of_total_sold")}{totalTicketsSold.toLocaleString("vi-VN")}{t("dashboard.tickets_sold_suffix")}</Text>
+              {analyticsDenied ? (
+                <Text style={[styles.statSubValue, { color: colors.textSecondary }]}>{t("dashboard.no_stats_permission")}</Text>
+              ) : (
+                <Text style={[styles.statSubValue, { color: colors.textSecondary }]}>{t("dashboard.of_total_sold")}{totalTicketsSold.toLocaleString("vi-VN")}{t("dashboard.tickets_sold_suffix")}</Text>
+              )}
             </View>
-            <CircularProgress percentage={checkinPercent} color={colors.primary} />
+            {!analyticsDenied && <CircularProgress percentage={checkinPercent} color={colors.primary} />}
           </View>
         </View>
         <TouchableOpacity 
@@ -386,24 +395,28 @@ export default function EventDashboardScreen() {
 
       {/* Tabs Navigation */}
       <View style={[styles.tabNav, { borderBottomColor: colors.border }]}>
+        {!analyticsDenied && (
         <TouchableOpacity 
           style={[styles.tabNavItem, activeTab === "revenue" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
           onPress={() => handleTabChange("revenue")}
         >
           <Text style={[styles.tabNavText, activeTab === "revenue" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>{t("dashboard.revenue")}</Text>
         </TouchableOpacity>
+        )}
         <TouchableOpacity 
           style={[styles.tabNavItem, activeTab === "checkin" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
           onPress={() => handleTabChange("checkin")}
         >
           <Text style={[styles.tabNavText, activeTab === "checkin" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>{t("dashboard.checkin")}</Text>
         </TouchableOpacity>
+        {!analyticsDenied && (
         <TouchableOpacity 
           style={[styles.tabNavItem, activeTab === "orders" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
           onPress={() => handleTabChange("orders")}
         >
           <Text style={[styles.tabNavText, activeTab === "orders" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>{t("dashboard.orders")}</Text>
         </TouchableOpacity>
+        )}
       </View>
 
       {/* Tab Content */}
@@ -414,9 +427,9 @@ export default function EventDashboardScreen() {
           </View>
         ) : (
           <>
-            {activeTab === "revenue" && renderRevenue()}
+            {activeTab === "revenue" && !analyticsDenied && renderRevenue()}
             {activeTab === "checkin" && renderCheckIn()}
-            {activeTab === "orders" && renderOrders()}
+            {activeTab === "orders" && !analyticsDenied && renderOrders()}
           </>
         )}
       </View>

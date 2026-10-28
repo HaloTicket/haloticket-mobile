@@ -80,6 +80,9 @@ export default function CheckInScannerScreen() {
         showtimeId: showtimeId || null,
         deviceInfo: Platform.OS + ' ' + Platform.Version,
         staffAssignmentId: user?.id || user?.email || 'unknown-staff'
+      }, {
+        // a 403 means this person may not scan this event
+        skipGlobalError: [403],
       }) as any;
       if (checkinData.status === 'VALID' || checkinData.status === 'SUCCESS' || checkinData.code === 'SUCCESS') {
         setStatus('success');
@@ -120,6 +123,10 @@ export default function CheckInScannerScreen() {
         setMessage(t("dashboard.ticket_locked"));
       } else if (resStatus === 409 || errorCode === 'CONCURRENCY_CONFLICT') {
         setMessage(t("dashboard.ticket_already_used_other_gate"));
+      } else if (resStatus === 403) {
+        setMessage(t("dashboard.checkin_forbidden"));
+      } else if (resStatus === 503 && errorCode === 'EVENT_ACCESS_UNAVAILABLE') {
+        setMessage(t("dashboard.checkin_access_unavailable"));
       } else {
         setMessage(errorMessage.toUpperCase());
       }

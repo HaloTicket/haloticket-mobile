@@ -12,7 +12,19 @@ import {
 
 export { classifyApiError, extractHost, ErrorClassification };
 
+declare module "axios" {
+  interface AxiosRequestConfig {
+    skipGlobalError?: boolean | number[];
+  }
+}
+
 const throttler = createErrorThrottler(3000);
+
+function skipsGlobalError(error: any): boolean {
+  const skip = error?.config?.skipGlobalError;
+  if (skip === true) return true;
+  return Array.isArray(skip) && skip.includes(error?.response?.status);
+}
 
 export function resetErrorThrottle(): void {
   throttler.reset();
@@ -103,7 +115,7 @@ axiosClient.interceptors.response.use(
       t: (key, opts) => String(i18n.t(key, opts)),
     });
 
-    if (classification.shouldEmitModal && classification.title && classification.message) {
+    if (!skipsGlobalError(error) && classification.shouldEmitModal && classification.title && classification.message) {
       emitApiError(classification.title, classification.message);
     }
 

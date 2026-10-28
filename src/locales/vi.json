@@ -60,6 +60,9 @@
     "auth_error": "Đã có lỗi xảy ra khi xác thực."
   },
   "dashboard": {
+    "no_stats_permission": "Bạn không có quyền xem thống kê",
+    "checkin_forbidden": "Bạn không có quyền quét vé của sự kiện này",
+    "checkin_access_unavailable": "Chưa xác minh được quyền quét vé, vui lòng thử lại",
     "events": "Sự kiện",
     "scan_qr": "Quét QR",
     "revenue": "Doanh thu",

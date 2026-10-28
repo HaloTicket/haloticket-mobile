@@ -67,10 +67,12 @@ export const eventApi = {
   getEventAnalytics: async (eventId: string, timeRange: "24h" | "30d" = "30d"): Promise<any> => {
     try {
       const response: any = await axiosClient.get(`/events/${eventId}/analytics`, {
-        params: { timeRange }
+        params: { timeRange },
+        skipGlobalError: true,
       });
       return response.data || response;
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.response?.status === 403) return { forbidden: true };
       // console.error("Failed to get event analytics:", err);
       return null;
     }
@@ -80,7 +82,8 @@ export const eventApi = {
   getEventBookings: async (eventId: string, search: string = "", showtimeId: string = "", page: number = 0, size: number = 20): Promise<any> => {
     try {
       const response: any = await axiosClient.get(`/bookings/events/${eventId}/organizer`, {
-        params: { search, showtimeId, page, size }
+        params: { search, showtimeId, page, size },
+        skipGlobalError: true,
       });
       return response.data || response;
     } catch (err) {
@@ -93,7 +96,8 @@ export const eventApi = {
   getEventCheckins: async (eventId: string, showtimeId: string = ""): Promise<any[]> => {
     try {
       const response: any = await axiosClient.get(`/tickets/checkin/events/${eventId}`, {
-        params: showtimeId ? { showtimeId } : {}
+        params: showtimeId ? { showtimeId } : {},
+        skipGlobalError: true,
       });
       return response.data || response || [];
     } catch (err) {
