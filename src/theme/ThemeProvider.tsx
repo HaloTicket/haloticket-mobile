@@ -1,58 +1,47 @@
-import React, { createContext, useState, useEffect } from "react";
-import { useColorScheme } from "react-native";
-import { Colors } from "./colors";
-import { storage } from "@/utils/storage";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { Appearance, useColorScheme } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { lightColors, darkColors, ThemeColors } from "./colors";
 
-/** Chế độ giao diện: sáng, tối hoặc theo hệ thống. */
-export type ThemeType = "light" | "dark" | "system";
-
-/** Giá trị ngữ cảnh giao diện: chế độ chọn, có đang tối không, bảng màu hiện hành và hàm đổi giao diện. */
-export interface ThemeContextData {
-  theme: ThemeType;
+interface ThemeContextType {
   isDark: boolean;
-  colors: typeof Colors.light;
-  setTheme: (theme: ThemeType) => void;
+  colors: ThemeColors;
   toggleTheme: () => void;
+  setTheme: (mode: "light" | "dark" | "system") => void;
 }
 
-/** Ngữ cảnh chứa trạng thái giao diện, đọc qua `useAppTheme`. */
-export const ThemeContext = createContext<ThemeContextData>({} as ThemeContextData);
+const ThemeContext = createContext<ThemeContextType>({} as ThemeContextType);
+const THEME_STORAGE_KEY = "haloticket_theme_preference";
 
-/** Cung cấp giao diện sáng/tối; đọc lựa chọn đã lưu và không dựng cây con cho tới khi đọc xong. */
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const systemScheme = useColorScheme();
-  const [theme, setThemeState] = useState<ThemeType>("system");
-  const [mounted, setMounted] = useState(false);
+  const systemColorScheme = useColorScheme() ?? Appearance.getColorScheme() ?? "light";
+  const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">("system");
 
   useEffect(() => {
-    storage.getItemAsync("THEME_PREFERENCE").then((val) => {
-      if (val === "light" || val === "dark") {
-        setThemeState(val as ThemeType);
+    AsyncStorage.getItem(THEME_STORAGE_KEY).then((saved) => {
+      if (saved === "light" || saved === "dark" || saved === "system") {
+        setThemeMode(saved);
       }
-      setMounted(true);
     });
   }, []);
 
-  /** Đổi chế độ giao diện và lưu lựa chọn để lần mở sau dùng lại. */
-  const setTheme = (newTheme: ThemeType) => {
-    setThemeState(newTheme);
-    storage.setItemAsync("THEME_PREFERENCE", newTheme);
+  const isDark = themeMode === "system" ? systemColorScheme === "dark" : themeMode === "dark";
+  const colors = isDark ? darkColors : lightColors;
+
+  const setTheme = async (mode: "light" | "dark" | "system") => {
+    setThemeMode(mode);
+    await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
   };
 
-  /** Đảo giữa sáng và tối dựa trên giao diện đang hiển thị (kể cả khi đang theo hệ thống). */
   const toggleTheme = () => {
-    const currentIsDark = theme === "system" ? systemScheme === "dark" : theme === "dark";
-    setTheme(currentIsDark ? "light" : "dark");
+    setTheme(isDark ? "light" : "dark");
   };
-
-  const isDark = theme === "system" ? systemScheme === "dark" : theme === "dark";
-  const activeColors = isDark ? Colors.dark : Colors.light;
-
-  if (!mounted) return null; // đợi đọc xong giao diện đã lưu
 
   return (
-    <ThemeContext.Provider value={{ theme, isDark, colors: activeColors, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ isDark, colors, toggleTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );
 };
+
+export const useAppTheme = () => useContext(ThemeContext);

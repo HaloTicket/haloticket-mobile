@@ -10,6 +10,7 @@ import { useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { OrganizerHeader } from "@/components/layout/OrganizerHeader";
+import { ScreenBackground } from "@/components/layout/ScreenBackground";
 import { EventFilterTabs } from "@/components/event/EventFilterTabs";
 import { EventCard } from "@/components/event/EventCard";
 import { SearchBar } from "@/components/ui/SearchBar";
@@ -92,7 +93,7 @@ export default function OrganizerCenterScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
+    <ScreenBackground>
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         <View style={styles.container}>
           <OrganizerHeader unreadCount={unreadCount} />
@@ -126,14 +127,14 @@ export default function OrganizerCenterScreen() {
             <FlatList
               data={filteredEvents}
               keyExtractor={(item) => item.id || Math.random().toString()}
-              renderItem={({ item, index }) => <EventCard event={item} />}
+              renderItem={({ item, index }) => <EventCard event={item} index={index} />}
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
             />
           )}
         </View>
       </SafeAreaView>
-    </View>
+    </ScreenBackground>
   );
 }
 
