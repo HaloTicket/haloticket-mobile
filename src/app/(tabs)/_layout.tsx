@@ -24,22 +24,30 @@ export default function StaffTabLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ 
-          title: t("common.home"), 
+        options={{
+          title: t("common.home"),
           tabBarLabel: t("common.home"),
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar-outline" size={size} color={color} />
-          )
+            <Ionicons
+              name="calendar-outline"
+              size={size}
+              color={color as string}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
-        options={{ 
-          title: t("common.profile"), 
+        options={{
+          title: t("common.profile"),
           tabBarLabel: t("common.profile"),
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
-          )
+            <Ionicons
+              name="person-outline"
+              size={size}
+              color={color as string}
+            />
+          ),
         }}
       />
     </Tabs>

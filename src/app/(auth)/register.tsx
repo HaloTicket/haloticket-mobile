@@ -32,7 +32,7 @@ export default function RegisterScreen() {
   const { t } = useTranslation();
 
   const discovery = AuthSession.useAutoDiscovery(`${CONFIG.KEYCLOAK_URL}/realms/${CONFIG.KEYCLOAK_REALM}`);
-  const redirectUri = AuthSession.makeRedirectUri({ scheme: "haloticket" });
+  const redirectUri = AuthSession.makeRedirectUri({ path: "login" });
 
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
     {

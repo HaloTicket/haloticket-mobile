@@ -1,0 +1,21 @@
+{
+  "cli": {
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://haloticket.duckdns.org/api",
+        "EXPO_PUBLIC_KEYCLOAK_URL": "https://haloticket.duckdns.org",
+        "EXPO_PUBLIC_KEYCLOAK_REALM": "haloticket-realm",
+        "EXPO_PUBLIC_KEYCLOAK_CLIENT_ID": "haloticket-web"
+      }
+    }
+  }
+}
