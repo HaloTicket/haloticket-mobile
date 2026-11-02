@@ -1,11 +1,25 @@
 import { createContext, useContext, useState, ReactNode } from "react";
-import { Modal, View, Text, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Platform } from "react-native";
+import { Modal, View, Text, StyleSheet, TouchableWithoutFeedback, Platform } from "react-native";
 import { useAppTheme } from "@/theme";
+import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
+import { useTranslation } from "react-i18next";
+
+export interface ConfirmOptions {
+  confirmTone?: "primary" | "danger";
+  confirmText?: string;
+  cancelText?: string;
+}
 
 /** Các hàm hiển thị hộp thoại thông báo hoặc xác nhận dùng chung toàn ứng dụng. */
 interface ModalContextData {
   showAlert: (title: string, message: string, onClose?: () => void) => void;
-  showConfirm: (title: string, message: string, onConfirm: () => void, onCancel?: () => void) => void;
+  showConfirm: (
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    onCancel?: () => void,
+    options?: ConfirmOptions
+  ) => void;
 }
 
 const ModalContext = createContext<ModalContextData>({} as ModalContextData);
@@ -16,6 +30,9 @@ interface ModalState {
   type: "alert" | "confirm";
   title: string;
   message: string;
+  confirmTone?: "primary" | "danger";
+  confirmText?: string;
+  cancelText?: string;
   onConfirm?: () => void;
   onCancel?: () => void;
 }
@@ -29,15 +46,40 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     message: "",
   });
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   /** Hiện hộp thoại thông báo; `onClose` chạy khi người dùng đóng hộp thoại. */
   const showAlert = (title: string, message: string, onClose?: () => void) => {
-    setModalState({ visible: true, type: "alert", title, message, onConfirm: onClose, onCancel: onClose });
+    setModalState({
+      visible: true,
+      type: "alert",
+      title,
+      message,
+      confirmTone: "primary",
+      onConfirm: onClose,
+      onCancel: onClose,
+    });
   };
 
   /** Hiện hộp thoại có hai nút; `onConfirm` chạy khi đồng ý, `onCancel` khi hủy. */
-  const showConfirm = (title: string, message: string, onConfirm: () => void, onCancel?: () => void) => {
-    setModalState({ visible: true, type: "confirm", title, message, onConfirm, onCancel });
+  const showConfirm = (
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    onCancel?: () => void,
+    options?: ConfirmOptions
+  ) => {
+    setModalState({
+      visible: true,
+      type: "confirm",
+      title,
+      message,
+      confirmTone: options?.confirmTone ?? "primary",
+      confirmText: options?.confirmText,
+      cancelText: options?.cancelText,
+      onConfirm,
+      onCancel,
+    });
   };
 
   /** Ẩn hộp thoại nhưng giữ nguyên nội dung cũ để tránh nháy khi đóng. */
@@ -57,6 +99,8 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     hideModal();
   };
 
+  const confirmBg = modalState.confirmTone === "danger" ? "#EF4444" : colors.primary;
+
   return (
     <ModalContext.Provider value={{ showAlert, showConfirm }}>
       {children}
@@ -72,24 +116,31 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
               <View style={[styles.modalContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <Text style={[styles.title, { color: colors.text }]}>{modalState.title}</Text>
                 <Text style={[styles.message, { color: colors.textSecondary }]}>{modalState.message}</Text>
-                
+
                 <View style={styles.buttonContainer}>
                   {modalState.type === "confirm" && (
-                    <TouchableOpacity 
-                      style={[styles.button, styles.cancelButton, { borderColor: colors.border }]} 
+                    <AnimatedPressable
+                      scaleTo={0.95}
+                      contentStyle={[styles.button, styles.cancelButton, { borderColor: colors.border }]}
                       onPress={handleCancel}
                     >
-                      <Text style={[styles.buttonText, { color: colors.textSecondary }]}>Hủy</Text>
-                    </TouchableOpacity>
+                      <Text style={[styles.buttonText, { color: colors.textSecondary }]}>
+                        {modalState.cancelText || t("common.cancel", "Hủy")}
+                      </Text>
+                    </AnimatedPressable>
                   )}
-                  <TouchableOpacity 
-                    style={[styles.button, styles.confirmButton, { backgroundColor: colors.primary }]} 
+                  <AnimatedPressable
+                    scaleTo={0.95}
+                    contentStyle={[styles.button, styles.confirmButton, { backgroundColor: confirmBg }]}
                     onPress={handleConfirm}
                   >
                     <Text style={styles.confirmButtonText}>
-                      {modalState.type === "alert" ? "Đóng" : "Xác nhận"}
+                      {modalState.confirmText ||
+                        (modalState.type === "alert"
+                          ? t("common.close", "Đóng")
+                          : t("common.confirm", "Xác nhận"))}
                     </Text>
-                  </TouchableOpacity>
+                  </AnimatedPressable>
                 </View>
               </View>
             </TouchableWithoutFeedback>
@@ -142,15 +193,14 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 8,
+    borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
   },
   cancelButton: {
     borderWidth: 1,
   },
-  confirmButton: {
-  },
+  confirmButton: {},
   buttonText: {
     fontSize: 15,
     fontWeight: "600",

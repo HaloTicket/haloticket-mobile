@@ -85,18 +85,21 @@
     "dark": "Tối",
     "help": "Trợ giúp & Hỗ trợ",
     "admin": "Quản trị viên",
-    "logout_confirm": "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này?"
+    "logout_confirm": "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này?",
+    "cancel": "Hủy",
+    "confirm": "Xác nhận",
+    "close": "Đóng"
   },
   "auth": {
     "login_title": "Đăng nhập",
-    "welcome": "Chào mừng bạn quay trở lại!",
+    "welcome": "Chào mừng bạn quay trở lại HaloTicket!",
     "email": "Email",
     "email_placeholder": "Nhập email của bạn",
     "password": "Mật khẩu",
     "password_placeholder": "Nhập mật khẩu của bạn",
     "login_btn": "Đăng nhập",
     "forgot_password": "Quên mật khẩu?",
-    "or": "HOẶC",
+    "or": "Hoặc",
     "continue_with_google": "Tiếp tục với Google",
     "no_account": "Chưa có tài khoản? ",
     "register_now": "Đăng ký ngay",
@@ -128,7 +131,10 @@
     "continue": "Tiếp tục",
     "done_success": "Email của bạn đã được xác minh thành công! Bây giờ bạn có thể đăng nhập.",
     "auth_error": "Đã có lỗi xảy ra khi xác thực.",
-    "login_error": "Đăng nhập thất bại"
+    "login_error": "Đăng nhập thất bại",
+    "welcome_headline": "Quản lý sự kiện dễ dàng hơn",
+    "welcome_subtitle": "Dành riêng cho Ban tổ chức (BTC) và\nđội ngũ vận hành sự kiện",
+    "register_btn": "Đăng ký"
   },
   "dashboard": {
     "no_stats_permission": "Bạn không có quyền xem thống kê",

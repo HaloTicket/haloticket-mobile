@@ -80,7 +80,9 @@ export default function ProfileScreen() {
         } finally {
           setIsLoggingOut(false);
         }
-      }
+      },
+      undefined,
+      { confirmTone: "danger" }
     );
   };
 
