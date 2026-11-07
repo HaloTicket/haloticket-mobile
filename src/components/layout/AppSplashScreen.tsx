@@ -322,7 +322,7 @@ export function AppSplashScreen({ isAppReady, onFinish }: AppSplashScreenProps) 
                   ]}
                 >
                   <Animated.View style={[styles.trackFillClip, { width: fillWidth }]}>
-                    <View style={{ flex: 1, backgroundColor: "#1D6BFF" }} />
+                    <WaveGradientFill width={innerWidth} />
                   </Animated.View>
                 </View>
 
