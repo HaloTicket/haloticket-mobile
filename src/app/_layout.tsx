@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/theme";
 import { ModalProvider } from "@/hooks/useModal";
 import { useFonts } from "expo-font";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { AppSplashScreen } from "@/components/layout/AppSplashScreen";
 import { CheckinAssistant } from "@/components/event/CheckinAssistant";
 import { CheckinAssistantLauncher } from "@/components/event/CheckinAssistantLauncher";
 import { CheckinAssistantContext, type AssistantScope } from "@/components/event/CheckinAssistantContext";
@@ -25,6 +26,9 @@ function RootLayoutNav() {
   const segments = useSegments();
   const route = useGlobalSearchParams<{ eventId?: string; showtimeId?: string }>();
   const router = useRouter();
+  const [splashDone, setSplashDone] = useState(false);
+  const [splashRunId, setSplashRunId] = useState(0);
+  const prevAuthenticatedRef = useRef(isAuthenticated);
   const [dashboardScope, setDashboardScope] = useState<AssistantScope>({});
   const [openScope, setOpenScope] = useState<string | null>(null);
   const [assistantSide, setAssistantSide] = useState<"left" | "right">("right");
@@ -39,7 +43,7 @@ function RootLayoutNav() {
     showtimeId: onScanner && typeof route.showtimeId === "string" ? route.showtimeId : undefined,
   };
   const scopeKey = JSON.stringify([user?.id, eventId, scope.showtimeId || null]);
-  const showAssistant = Boolean(isAuthenticated && user?.id && !isLoading && segments[0] !== "(auth)" &&
+  const showAssistant = Boolean(isAuthenticated && user?.id && splashDone && segments[0] !== "(auth)" &&
     (!(onScanner || onEvent) || eventId));
   const assistantOpen = showAssistant && openScope === scopeKey;
   const isAssistantOpen = useCallback(() => openScopeRef.current === scopeKey, [scopeKey]);
@@ -53,12 +57,21 @@ function RootLayoutNav() {
   }, [showAssistant, scopeKey, setAssistantOpen]);
 
   useEffect(() => {
+    // Khi người dùng vừa đăng xuất: hiện lại Splash Screen rồi tự động mờ sang màn hình Welcome
+    if (prevAuthenticatedRef.current && !isAuthenticated) {
+      setSplashRunId((prev) => prev + 1);
+      setSplashDone(false);
+    }
+    prevAuthenticatedRef.current = isAuthenticated;
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
 
     if (!isAuthenticated && !inAuthGroup) {
-      router.replace("/(auth)/login");
+      router.replace("/(auth)/welcome");
     } else if (isAuthenticated && inAuthGroup) {
       router.replace("/(tabs)");
     }
@@ -74,6 +87,11 @@ function RootLayoutNav() {
             <Stack.Screen name="notifications" />
           </Stack>
         )}
+        {!splashDone && (
+          <AppSplashScreen
+            key={splashRunId}
+            isAppReady={!isLoading}
+            onFinish={() => setSplashDone(true)}
           />
         )}
         {showAssistant && (

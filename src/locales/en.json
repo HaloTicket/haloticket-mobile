@@ -85,18 +85,21 @@
     "dark": "Dark",
     "help": "Help & Support",
     "admin": "Administrator",
-    "logout_confirm": "Are you sure you want to sign out of this account?"
+    "logout_confirm": "Are you sure you want to sign out of this account?",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close"
   },
   "auth": {
     "login_title": "Login",
-    "welcome": "Welcome back!",
+    "welcome": "Welcome back to HaloTicket!",
     "email": "Email",
     "email_placeholder": "Enter your email",
     "password": "Password",
     "password_placeholder": "Enter your password",
     "login_btn": "Sign In",
     "forgot_password": "Forgot password?",
-    "or": "OR",
+    "or": "Or",
     "continue_with_google": "Continue with Google",
     "no_account": "Don't have an account? ",
     "register_now": "Register now",
@@ -128,7 +131,10 @@
     "continue": "Continue",
     "done_success": "Your email has been verified successfully! You can now login.",
     "auth_error": "An error occurred during authentication.",
-    "login_error": "Sign in failed"
+    "login_error": "Sign in failed",
+    "welcome_headline": "Manage events effortlessly",
+    "welcome_subtitle": "Built exclusively for Event Organizers\nand on-site operations teams",
+    "register_btn": "Register"
   },
   "dashboard": {
     "no_stats_permission": "You do not have permission to view statistics",
