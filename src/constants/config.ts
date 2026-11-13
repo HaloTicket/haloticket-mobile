@@ -10,8 +10,14 @@ let KEYCLOAK_URL = rawKeycloakUrl;
 if (isWeb && typeof window !== "undefined") {
   const hostname = window.location.hostname;
   if (hostname === "localhost" || hostname === "127.0.0.1") {
-    API_BASE_URL = rawApiUrl.replace(/:\/\/[^/:]+/, `://${hostname}`);
-    KEYCLOAK_URL = rawKeycloakUrl.replace(/:\/\/[^/:]+/, `://${hostname}`);
+    if (rawApiUrl.startsWith("http://")) {
+      API_BASE_URL = rawApiUrl.replace(/:\/\/[^/:]+/, `://${hostname}`);
+    }
+    if (process.env.EXPO_PUBLIC_WEB_KEYCLOAK_URL) {
+      KEYCLOAK_URL = process.env.EXPO_PUBLIC_WEB_KEYCLOAK_URL;
+    } else if (rawKeycloakUrl.startsWith("http://")) {
+      KEYCLOAK_URL = rawKeycloakUrl.replace(/:\/\/[^/:]+/, `://${hostname}`);
+    }
   }
 }
 
@@ -32,5 +38,7 @@ export const CONFIG = {
     STAFF_INFO: "halo_staff_info",
     ACTIVE_GATE: "halo_active_gate",
     THEME: "halo_theme",
+    REMEMBER_ME: "halo_remember_me",
+    REMEMBERED_EMAIL: "halo_remembered_email",
   },
 };
