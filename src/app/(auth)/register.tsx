@@ -65,9 +65,9 @@ export default function RegisterScreen() {
         discovery!
       ).then((tokenResult) => {
         if (tokenResult.accessToken) {
-          setAuthenticatedToken(tokenResult.accessToken);
+          setAuthenticatedToken(tokenResult.accessToken, tokenResult.refreshToken);
         }
-      }).catch((error) => {
+      }).catch(() => {
         isExchanging.current = false;
         showAlert(t("auth.error_title"), t("auth.error_google"));
       });

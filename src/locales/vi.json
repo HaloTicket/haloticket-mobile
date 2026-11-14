@@ -1,6 +1,5 @@
 {
   "common": {
-    "login": "Đăng nhập",
     "logout": "Đăng xuất",
     "home": "Trang chủ",
     "profile": "Tài khoản",
@@ -12,7 +11,8 @@
     "light": "Sáng",
     "dark": "Tối",
     "help": "Trợ giúp & Hỗ trợ",
-    "admin": "Quản trị viên"
+    "admin": "Quản trị viên",
+    "logout_confirm": "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này?"
   },
   "auth": {
     "login_title": "Đăng nhập",
@@ -29,9 +29,6 @@
     "register_now": "Đăng ký ngay",
     "register_title": "Đăng ký tài khoản",
     "register_welcome": "Tạo tài khoản để bắt đầu quản lý sự kiện",
-    "name": "Họ và tên",
-    "name_placeholder": "Nhập họ tên của bạn",
-    "register_btn": "Đăng ký",
     "agree_terms": "Bằng việc đăng ký, bạn đồng ý với ",
     "terms": "Điều khoản dịch vụ",
     "and": " và ",
@@ -57,26 +54,19 @@
     "password_mismatch": "Mật khẩu xác nhận chưa khớp.",
     "continue": "Tiếp tục",
     "done_success": "Email của bạn đã được xác minh thành công! Bây giờ bạn có thể đăng nhập.",
-    "auth_error": "Đã có lỗi xảy ra khi xác thực."
+    "auth_error": "Đã có lỗi xảy ra khi xác thực.",
+    "login_error": "Đăng nhập thất bại"
   },
   "dashboard": {
     "no_stats_permission": "Bạn không có quyền xem thống kê",
     "checkin_forbidden": "Bạn không có quyền quét vé của sự kiện này",
     "checkin_access_unavailable": "Chưa xác minh được quyền quét vé, vui lòng thử lại",
-    "events": "Sự kiện",
-    "scan_qr": "Quét QR",
     "revenue": "Doanh thu",
     "checkin": "Check-in",
     "orders": "Đơn hàng",
-    "welcome": "Xin chào",
-    "stats_overview": "Tổng quan",
-    "total_revenue": "Tổng doanh thu",
     "tickets_sold": "Vé đã bán",
-    "recent_events": "Sự kiện gần đây",
     "search_event": "Tìm kiếm sự kiện...",
-    "show_all": "Xem tất cả",
     "no_events": "Chưa có sự kiện nào",
-    "my_events": "Sự kiện của tôi",
     "upcoming": "Sắp tới",
     "past": "Đã qua",
     "manage": "Quản lý",
@@ -106,7 +96,6 @@
     "total_amount": "Tổng tiền",
     "manage_event": "Quản lý sự kiện",
     "loading": "Đang tải...",
-    "redeem": "Redeem",
     "camera_permission_required": "Cần cấp quyền truy cập camera để quét QR",
     "grant_permission": "Cấp quyền",
     "redeem_success": "THÀNH CÔNG!",
@@ -122,7 +111,14 @@
     "ticket_label": "Vé: ",
     "free_zone": "Khu vực tự do",
     "scan_qr_title": "Quét mã QR",
-    "scan_next": "QUÉT TIẾP TỤC"
+    "scan_next": "QUÉT TIẾP TỤC",
+    "order_status_pending": "Chờ thanh toán",
+    "order_status_paid": "Đã thanh toán",
+    "order_status_confirmed": "Đã xác nhận",
+    "order_status_cancelled": "Đã hủy",
+    "order_status_expired": "Hết hạn",
+    "order_status_refunded": "Đã hoàn tiền",
+    "no_orders_permission": "Bạn không có quyền xem đơn hàng của sự kiện này"
   },
   "errors": {
     "connection_error_title": "Lỗi kết nối",
@@ -132,4 +128,3 @@
     "server_error_fallback": "Đã xảy ra lỗi khi kết nối máy chủ"
   }
 }
-

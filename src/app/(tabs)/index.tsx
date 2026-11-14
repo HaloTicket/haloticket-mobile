@@ -13,6 +13,7 @@ import { OrganizerHeader } from "@/components/layout/OrganizerHeader";
 import { EventFilterTabs } from "@/components/event/EventFilterTabs";
 import { EventCard } from "@/components/event/EventCard";
 import { SearchBar } from "@/components/ui/SearchBar";
+import { logError } from "@/utils/log";
 
 export default function OrganizerCenterScreen() {
   const { colors } = useAppTheme();
@@ -31,7 +32,7 @@ export default function OrganizerCenterScreen() {
       const data = await eventApi.getMyEvents();
       setEvents(data);
     } catch (error) {
-      console.error("Fetch events error:", error);
+      logError("Fetch events error:", error);
     } finally {
       setIsLoading(false);
     }

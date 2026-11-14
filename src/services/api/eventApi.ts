@@ -86,8 +86,9 @@ export const eventApi = {
         skipGlobalError: true,
       });
       return response.data || response;
-    } catch (err) {
-      // console.error("Failed to get event bookings:", err);
+    } catch (err: any) {
+      // a 403 means this person may not see the orders (ORDERS_VIEW): the screen says so instead of showing an empty list
+      if (err?.response?.status === 403) return { forbidden: true, content: [], totalElements: 0, totalPages: 0 };
       return { content: [], totalElements: 0, totalPages: 0 };
     }
   },

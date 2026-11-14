@@ -1,6 +1,5 @@
 {
   "common": {
-    "login": "Login",
     "logout": "Logout",
     "home": "Home",
     "profile": "Profile",
@@ -12,7 +11,8 @@
     "light": "Light",
     "dark": "Dark",
     "help": "Help & Support",
-    "admin": "Administrator"
+    "admin": "Administrator",
+    "logout_confirm": "Are you sure you want to sign out of this account?"
   },
   "auth": {
     "login_title": "Login",
@@ -29,9 +29,6 @@
     "register_now": "Register now",
     "register_title": "Register",
     "register_welcome": "Create a new account to get started!",
-    "name": "Full Name",
-    "name_placeholder": "Enter your full name",
-    "register_btn": "Sign Up",
     "agree_terms": "By registering, you agree to our ",
     "terms": "Terms of Service",
     "and": " and ",
@@ -57,26 +54,19 @@
     "password_mismatch": "Passwords do not match.",
     "continue": "Continue",
     "done_success": "Your email has been verified successfully! You can now login.",
-    "auth_error": "An error occurred during authentication."
+    "auth_error": "An error occurred during authentication.",
+    "login_error": "Sign in failed"
   },
   "dashboard": {
     "no_stats_permission": "You do not have permission to view statistics",
     "checkin_forbidden": "You do not have permission to scan tickets for this event",
     "checkin_access_unavailable": "Could not verify your scan permission, please try again",
-    "events": "Events",
-    "scan_qr": "Scan QR",
     "revenue": "Revenue",
     "checkin": "Check-in",
     "orders": "Orders",
-    "welcome": "Hello",
-    "stats_overview": "Overview",
-    "total_revenue": "Total Revenue",
     "tickets_sold": "Tickets Sold",
-    "recent_events": "Recent Events",
     "search_event": "Search events...",
-    "show_all": "View all",
     "no_events": "No events available",
-    "my_events": "My Events",
     "upcoming": "Upcoming",
     "past": "Past",
     "manage": "Manage",
@@ -106,7 +96,6 @@
     "total_amount": "Total Amount",
     "manage_event": "Manage Event",
     "loading": "Loading...",
-    "redeem": "Redeem",
     "camera_permission_required": "Camera permission is required to scan QR codes",
     "grant_permission": "Grant Permission",
     "redeem_success": "SUCCESS!",
@@ -122,7 +111,14 @@
     "ticket_label": "Ticket: ",
     "free_zone": "Free Zone",
     "scan_qr_title": "Scan QR Code",
-    "scan_next": "SCAN NEXT"
+    "scan_next": "SCAN NEXT",
+    "order_status_pending": "Pending payment",
+    "order_status_paid": "Paid",
+    "order_status_confirmed": "Confirmed",
+    "order_status_cancelled": "Cancelled",
+    "order_status_expired": "Expired",
+    "order_status_refunded": "Refunded",
+    "no_orders_permission": "You do not have permission to view orders for this event"
   },
   "errors": {
     "connection_error_title": "Connection Error",
@@ -132,4 +128,3 @@
     "server_error_fallback": "An error occurred while connecting to the server"
   }
 }
-

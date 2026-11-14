@@ -1,4 +1,3 @@
-import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAppTheme } from "@/theme";
@@ -7,7 +6,7 @@ import { changeLanguage } from "@/locales/i18n";
 
 export function OrganizerHeader() {
   const { colors, isDark, toggleTheme } = useAppTheme();
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   const handleToggleLanguage = async () => {
     const newLang = i18n.language === "vi" ? "en" : "vi";

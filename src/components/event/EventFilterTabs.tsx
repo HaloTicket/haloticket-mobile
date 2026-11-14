@@ -1,4 +1,3 @@
-import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAppTheme } from "@/theme";
@@ -11,7 +10,7 @@ interface EventFilterTabsProps {
   onToggleSearch: () => void;
 }
 
-export function EventFilterTabs({ filter, onFilterChange, isSearchVisible, onToggleSearch }: EventFilterTabsProps) {
+export function EventFilterTabs({ filter, onFilterChange, onToggleSearch }: EventFilterTabsProps) {
   const { colors } = useAppTheme();
   const { t } = useTranslation();
 

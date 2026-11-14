@@ -23,6 +23,8 @@ export const CONFIG = {
   TIMEOUT: 10000,
   STORAGE_KEYS: {
     STAFF_TOKEN: "halo_staff_token",
+    REFRESH_TOKEN: "halo_staff_refresh",
+    TOKEN_SOURCE: "halo_token_source",
     STAFF_INFO: "halo_staff_info",
     ACTIVE_GATE: "halo_active_gate",
     THEME: "halo_theme",

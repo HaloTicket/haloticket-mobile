@@ -2,9 +2,11 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { DeviceEventEmitter } from "react-native";
 import { storage } from "@/utils/storage";
 import { authApi } from "@/services/auth/authApi";
+import { saveSession, refreshAccessToken } from "@/services/auth/tokenSession";
 import { CONFIG } from "@/constants/config";
 import { jwtDecode } from "jwt-decode";
 import { useModal } from "@/hooks/useModal";
+import { logError, logWarn } from "@/utils/log";
 
 interface User {
   id?: string;
@@ -19,11 +21,20 @@ interface AuthContextData {
   isLoading: boolean;
   user: User | null;
   login: (username: string, pin: string) => Promise<void>;
-  setAuthenticatedToken: (token: string) => Promise<void>;
+  setAuthenticatedToken: (token: string, refreshToken?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
+
+function isExpired(token: string): boolean {
+  try {
+    const decoded: any = jwtDecode(token);
+    return Boolean(decoded.exp && decoded.exp * 1000 < Date.now());
+  } catch {
+    return true;
+  }
+}
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -36,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // check if token is expired
       if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-        console.warn("Token is expired");
+        logWarn("Token is expired");
         logout();
         return;
       }
@@ -50,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       setIsAuthenticated(true);
     } catch (e) {
-      console.error("Invalid token:", e);
+      logError("Invalid token:", e);
       logout();
     }
   };
@@ -61,12 +72,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // check token on mount
     const checkToken = async () => {
       try {
-        const token = await storage.getItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN);
+        let token = await storage.getItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN);
+        if (token && isExpired(token)) {
+          // the saved access token ran out while the app was closed: renew it instead of asking for the password again
+          token = (await refreshAccessToken()) ?? token;
+        }
         if (token) {
           processToken(token);
         }
       } catch (error) {
-        console.error("Failed to check token:", error);
+        logError("Failed to check token:", error);
       } finally {
         setIsLoading(false);
       }
@@ -96,11 +111,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (username: string, pin: string) => {
     try {
-      const response = await authApi.login(username, pin);
+      await authApi.login(username, pin);
       const token = await storage.getItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN);
       if (token) processToken(token);
     } catch (error) {
-      console.error("Login failed:", error);
+      logError("Login failed:", error);
       throw error;
     }
   };
@@ -111,11 +126,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (e) {}
     setIsAuthenticated(false);
     setUser(null);
-    await storage.deleteItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN);
   };
 
-  const setAuthenticatedToken = async (token: string) => {
-    await storage.setItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN, token);
+  // the Google sign-in goes straight to Keycloak, so its refresh token is renewed against Keycloak, not the backend
+  const setAuthenticatedToken = async (token: string, refreshToken?: string) => {
+    await saveSession({ accessToken: token, refreshToken }, "keycloak");
     processToken(token);
   };
 

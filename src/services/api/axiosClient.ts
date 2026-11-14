@@ -2,6 +2,8 @@ import axios from "axios";
 import { DeviceEventEmitter } from "react-native";
 import { CONFIG } from "@/constants/config";
 import { storage } from "@/utils/storage";
+import { logError } from "@/utils/log";
+import { refreshAccessToken, clearSession } from "@/services/auth/tokenSession";
 import i18n from "@/locales/i18n";
 import {
   classifyApiError,
@@ -60,7 +62,7 @@ axiosClient.interceptors.request.use(
         }
       }
     } catch (error) {
-      console.error("Error retrieving token:", error);
+      logError("Error retrieving token:", error);
     }
     return config;
   },
@@ -80,7 +82,22 @@ axiosClient.interceptors.response.use(
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      // remove token and retry
+      // an expired access token: renew it with the refresh token and replay the call once (not for the login calls
+      // themselves, where a 401 means wrong credentials)
+      const isAuthCall = String(originalRequest.url || "").startsWith("/auth/");
+      if (!isAuthCall) {
+        const freshToken = await refreshAccessToken();
+        if (freshToken) {
+          if (typeof originalRequest.headers?.set === "function") {
+            originalRequest.headers.set("Authorization", `Bearer ${freshToken}`);
+          } else {
+            originalRequest.headers = { ...originalRequest.headers, Authorization: `Bearer ${freshToken}` };
+          }
+          return axiosClient(originalRequest);
+        }
+      }
+
+      // no refresh token, or it was refused: remove the token and retry as a public call
       if (originalRequest.headers) {
         if (typeof originalRequest.headers.delete === "function") {
           originalRequest.headers.delete("Authorization");
@@ -103,7 +120,7 @@ axiosClient.interceptors.response.use(
         return retryRes.data;
       } catch (retryErr: any) {
         if (retryErr?.response?.status === 401) {
-          storage.deleteItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN).catch(() => {});
+          clearSession().catch(() => {});
           DeviceEventEmitter.emit("onTokenExpired");
         }
         return Promise.reject(retryErr);

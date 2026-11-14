@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Platform, Animated, Easing, Dimensions } from 'react-native';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Animated, Easing } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAppTheme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,8 +8,8 @@ import axiosClient from '@/services/api/axiosClient';
 import { useAuth } from '@/hooks/useAuth';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
+import { logError } from "@/utils/log";
 
-const { width } = Dimensions.get('window');
 const SCAN_BOX_SIZE = 260;
 
 export default function CheckInScannerScreen() {
@@ -70,7 +70,7 @@ export default function CheckInScannerScreen() {
     );
   }
 
-  const handleBarCodeScanned = async ({ type, data }: { type: string; data: string }) => {
+  const handleBarCodeScanned = async ({ data }: { data: string }) => {
     setScanned(true);
     setStatus('idle');
     try {
@@ -81,8 +81,9 @@ export default function CheckInScannerScreen() {
         deviceInfo: Platform.OS + ' ' + Platform.Version,
         staffAssignmentId: user?.id || user?.email || 'unknown-staff'
       }, {
-        // a 403 means this person may not scan this event
-        skipGlobalError: [403],
+        // the screen explains these itself by code: 400 (wrong event or showtime, outside the window, unknown ticket),
+        // 403 (this person may not scan this event), 409 (another gate scanned it first), 503 (access check unavailable)
+        skipGlobalError: [400, 403, 409, 503],
       }) as any;
       if (checkinData.status === 'VALID' || checkinData.status === 'SUCCESS' || checkinData.code === 'SUCCESS') {
         setStatus('success');
@@ -102,7 +103,7 @@ export default function CheckInScannerScreen() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     } catch (error: any) {
-      console.error('Checkin Error:', error);
+      logError('Checkin Error:', error);
       setStatus('error');
       
       const resStatus = error.response?.status;

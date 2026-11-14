@@ -1,7 +1,6 @@
 import axios, { AxiosError } from "axios";
 import axiosClient from "@/services/api/axiosClient";
-import { storage } from "@/utils/storage";
-import { CONFIG } from "@/constants/config";
+import { saveSession, clearSession } from "./tokenSession";
 
 export const AUTH_ENDPOINTS = {
   login: "/auth/login",
@@ -63,13 +62,13 @@ export const authApi = {
       "Không thể đăng nhập. Vui lòng kiểm tra email và mật khẩu.",
     );
     if (response.accessToken) {
-      await storage.setItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN, response.accessToken);
+      await saveSession({ accessToken: response.accessToken, refreshToken: response.refreshToken }, "backend");
     }
     return response;
   },
-  
+
   logout: async () => {
-    await storage.deleteItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN);
+    await clearSession();
   },
 
   registerStart: (email: string, password: string, idempotencyKey: string) => request<AuthChallengeResponse>(

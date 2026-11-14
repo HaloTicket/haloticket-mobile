@@ -8,6 +8,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { eventApi } from "@/services/api/eventApi";
 import { EventData } from "@/types/event";
 import { useTranslation } from "react-i18next";
+import { logError } from "@/utils/log";
+import { orderStatusInfo } from "@/utils/orderStatus";
 
 export default function EventDashboardScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
@@ -22,6 +24,7 @@ export default function EventDashboardScreen() {
   const [analytics, setAnalytics] = useState<any>(null);
   // the person may scan tickets
   const [analyticsDenied, setAnalyticsDenied] = useState(false);
+  const [ordersDenied, setOrdersDenied] = useState(false);
   
   // orders
   const [orders, setOrders] = useState<any[]>([]);
@@ -54,7 +57,7 @@ export default function EventDashboardScreen() {
       setAnalytics(denied ? null : analyticsRes);
       if (denied) setActiveTab("checkin");
     } catch (e) {
-      console.error("fetchDashboardData error:", e);
+      logError("fetchDashboardData error:", e);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -68,7 +71,7 @@ export default function EventDashboardScreen() {
       const res = await eventApi.getEventCheckins(eventId as string, selectedShowtimeId);
       setCheckins(res);
     } catch (e) {
-      console.error("fetchCheckins error:", e);
+      logError("fetchCheckins error:", e);
     } finally {
       setIsCheckinsLoading(false);
     }
@@ -89,9 +92,10 @@ export default function EventDashboardScreen() {
     setIsOrdersLoading(true);
     try {
       const res = await eventApi.getEventBookings(eventId as string, searchOrder, selectedShowtimeId, 0, 100);
+      setOrdersDenied(res?.forbidden === true);
       setOrders(res.content || []);
     } catch (e) {
-      console.error("fetchOrders error:", e);
+      logError("fetchOrders error:", e);
     } finally {
       setIsOrdersLoading(false);
     }
@@ -191,7 +195,6 @@ export default function EventDashboardScreen() {
   };
 
   const renderRevenue = () => {
-    console.log("Analytics Data:", analytics);
     const totalTarget = analytics?.totalRevenueTarget || 0;
     const currentRev = analytics?.currentRevenue || 0;
     let revPercent = totalTarget > 0 ? Number(((currentRev / totalTarget) * 100).toFixed(1)) : (currentRev > 0 ? 100 : 0);
@@ -338,8 +341,8 @@ export default function EventDashboardScreen() {
         <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 24 }} />
       ) : orders.length === 0 ? (
         <View style={{ alignItems: "center", marginTop: 40 }}>
-          <Ionicons name="receipt-outline" size={48} color={colors.border} />
-          <Text style={{ color: colors.textSecondary, marginTop: 12 }}>{t("dashboard.no_orders")}</Text>
+          <Ionicons name={ordersDenied ? "lock-closed-outline" : "receipt-outline"} size={48} color={colors.border} />
+          <Text style={{ color: colors.textSecondary, marginTop: 12 }}>{ordersDenied ? t("dashboard.no_orders_permission") : t("dashboard.no_orders")}</Text>
         </View>
       ) : (
         <>
@@ -348,12 +351,15 @@ export default function EventDashboardScreen() {
             data={orders}
             keyExtractor={(item) => item.id || item.bookingCode}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => (
+            renderItem={({ item }) => {
+              const statusInfo = orderStatusInfo(item.status);
+              const statusColor = statusInfo.tone === "success" ? "#34C759" : statusInfo.tone === "danger" ? "#FF3B30" : statusInfo.tone === "warning" ? "#FF9500" : colors.textSecondary;
+              return (
               <View style={[styles.orderCard, { backgroundColor: colors.surface }]}>
                 <View style={styles.orderCardHeader}>
                   <Text style={[styles.orderCustomerName, { color: colors.text }]}>{item.customerName || t("dashboard.customer")}</Text>
-                  <Text style={[styles.orderStatus, { color: item.status === "COMPLETED" ? "#34C759" : colors.textSecondary }]}>
-                    {item.status}
+                  <Text style={[styles.orderStatus, { color: statusColor }]}>
+                    {statusInfo.labelKey ? t(statusInfo.labelKey) : item.status}
                   </Text>
                 </View>
                 <Text style={[styles.orderId, { color: colors.textSecondary }]}>{t("dashboard.order_code")}{item.bookingCode}</Text>
@@ -369,7 +375,8 @@ export default function EventDashboardScreen() {
                   </View>
                 </View>
               </View>
-            )}
+              );
+            }}
           />
         </>
       )}

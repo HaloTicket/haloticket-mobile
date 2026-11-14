@@ -30,7 +30,13 @@
       "expo-secure-store",
       "expo-font",
       "expo-web-browser",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "HaloTicket dùng camera để quét mã QR trên vé."
+        }
+      ]
     ],
     "extra": {
       "router": {
