@@ -134,7 +134,15 @@
     "login_error": "Sign in failed",
     "welcome_headline": "Manage events effortlessly",
     "welcome_subtitle": "Built exclusively for Event Organizers\nand on-site operations teams",
-    "register_btn": "Register"
+    "register_btn": "Register",
+    "remember_me": "Remember me",
+    "password_valid": "Valid password",
+    "password_invalid": "Password does not meet requirements",
+    "password_rule_length": "8 - 32 characters",
+    "password_rule_lower_num": "Includes lowercase letter and number",
+    "password_rule_special": "Includes a special character (!, $, @, %, ...)",
+    "password_rule_upper": "At least 1 uppercase letter",
+    "password_rule_match": "Confirmation password matches"
   },
   "dashboard": {
     "no_stats_permission": "You do not have permission to view statistics",

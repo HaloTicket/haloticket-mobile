@@ -134,7 +134,15 @@
     "login_error": "Đăng nhập thất bại",
     "welcome_headline": "Quản lý sự kiện dễ dàng hơn",
     "welcome_subtitle": "Dành riêng cho Ban tổ chức (BTC) và\nđội ngũ vận hành sự kiện",
-    "register_btn": "Đăng ký"
+    "register_btn": "Đăng ký",
+    "remember_me": "Ghi nhớ đăng nhập",
+    "password_valid": "Mật khẩu hợp lệ",
+    "password_invalid": "Mật khẩu chưa hợp lệ",
+    "password_rule_length": "Từ 8 - 32 ký tự",
+    "password_rule_lower_num": "Bao gồm chữ thường và số",
+    "password_rule_special": "Bao gồm ký tự đặc biệt (!, $, @, %, ...)",
+    "password_rule_upper": "Có ít nhất 1 ký tự in hoa",
+    "password_rule_match": "Mật khẩu xác nhận khớp"
   },
   "dashboard": {
     "no_stats_permission": "Bạn không có quyền xem thống kê",

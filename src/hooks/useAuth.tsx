@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { DeviceEventEmitter } from "react-native";
 import { storage } from "@/utils/storage";
 import { authApi } from "@/services/auth/authApi";
-import { saveSession, refreshAccessToken } from "@/services/auth/tokenSession";
+import { clearSession, saveSession, refreshAccessToken } from "@/services/auth/tokenSession";
 import { CONFIG } from "@/constants/config";
 import { jwtDecode } from "jwt-decode";
 import { useModal } from "@/hooks/useModal";
@@ -22,8 +22,8 @@ interface AuthContextData {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: User | null;
-  login: (username: string, pin: string) => Promise<void>;
-  setAuthenticatedToken: (token: string, refreshToken?: string) => Promise<void>;
+  login: (username: string, pin: string, rememberMe?: boolean) => Promise<void>;
+  setAuthenticatedToken: (token: string, refreshToken?: string, rememberMe?: boolean) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -41,7 +41,7 @@ function isExpired(token: string): boolean {
 
 /**
  * Cung cấp ngữ cảnh xác thực cho ứng dụng: khôi phục phiên từ bộ nhớ khi khởi động
- * và lắng nghe sự kiện hết hạn phiên hoặc lỗi API để hiện hộp thoại.
+ * (tôn trọng tùy chọn "Ghi nhớ đăng nhập") và lắng nghe sự kiện hết hạn phiên hoặc lỗi API.
  */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -52,14 +52,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const processToken = (token: string) => {
     try {
       const decoded: any = jwtDecode(token);
-      
+
       // kiểm tra token đã hết hạn chưa
       if (decoded.exp && decoded.exp * 1000 < Date.now()) {
         logWarn("Token is expired");
         logout();
         return;
       }
-      
+
       setUser({
         id: decoded.sub,
         name: decoded.name || decoded.given_name || decoded.preferred_username,
@@ -78,9 +78,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // kiểm tra token khi khởi động
-    /** Đọc token đã lưu, làm mới nếu hết hạn rồi khôi phục phiên; luôn tắt trạng thái đang tải khi xong. */
+    /** Đọc tùy chọn ghi nhớ đăng nhập; nếu tắt thì xóa phiên cũ, ngược lại khôi phục & làm mới token nếu hết hạn. */
     const checkToken = async () => {
       try {
+        const rememberPref = await storage.getItemAsync(CONFIG.STORAGE_KEYS.REMEMBER_ME);
+        if (rememberPref === "false") {
+          await clearSession();
+          return;
+        }
+
         let token = await storage.getItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN);
         if (token && isExpired(token)) {
           // access token đã lưu hết hạn lúc ứng dụng đang đóng: làm mới thay vì bắt nhập lại mật khẩu
@@ -122,10 +128,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * Đăng nhập bằng tên đăng nhập và mật khẩu rồi nạp phiên từ token đã lưu.
    * @param username - tên đăng nhập hoặc email
    * @param pin - mật khẩu
+   * @param rememberMe - có tự động duy trì phiên & ghi nhớ email cho lần mở app sau không
    * @throws lỗi từ API đăng nhập được ném lại cho nơi gọi xử lý
    */
-  const login = async (username: string, pin: string) => {
+  const login = async (username: string, pin: string, rememberMe = true) => {
     try {
+      await storage.setItemAsync(CONFIG.STORAGE_KEYS.REMEMBER_ME, rememberMe ? "true" : "false");
+      if (rememberMe) {
+        await storage.setItemAsync(CONFIG.STORAGE_KEYS.REMEMBERED_EMAIL, username.trim());
+      } else {
+        await storage.deleteItemAsync(CONFIG.STORAGE_KEYS.REMEMBERED_EMAIL);
+      }
       await authApi.login(username, pin);
       const token = await storage.getItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN);
       if (token) processToken(token);
@@ -149,8 +162,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * Đăng nhập Google đi thẳng tới Keycloak nên refresh token được làm mới ở Keycloak, không qua backend.
    * @param token - access token
    * @param refreshToken - refresh token (nếu có)
+   * @param rememberMe - có ghi nhớ phiên cho lần mở app sau không
    */
-  const setAuthenticatedToken = async (token: string, refreshToken?: string) => {
+  const setAuthenticatedToken = async (token: string, refreshToken?: string, rememberMe = true) => {
+    await storage.setItemAsync(CONFIG.STORAGE_KEYS.REMEMBER_ME, rememberMe ? "true" : "false");
+    if (rememberMe) {
+      try {
+        const decoded: any = jwtDecode(token);
+        if (decoded?.email) {
+          await storage.setItemAsync(CONFIG.STORAGE_KEYS.REMEMBERED_EMAIL, String(decoded.email));
+        }
+      } catch {}
+    } else {
+      await storage.deleteItemAsync(CONFIG.STORAGE_KEYS.REMEMBERED_EMAIL);
+    }
     await saveSession({ accessToken: token, refreshToken }, "keycloak");
     processToken(token);
   };
