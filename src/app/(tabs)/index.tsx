@@ -15,6 +15,10 @@ import { EventCard } from "@/components/event/EventCard";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { logError } from "@/utils/log";
 
+/**
+ * Màn hình trung tâm tổ chức: liệt kê sự kiện được phân công cho người dùng, lọc theo tab
+ * sắp diễn ra hoặc đã qua và theo từ khóa tìm kiếm theo tiêu đề. Tải lại mỗi khi màn hình được focus.
+ */
 export default function OrganizerCenterScreen() {
   const { colors } = useAppTheme();
   const { user } = useAuth();
@@ -26,6 +30,7 @@ export default function OrganizerCenterScreen() {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  /** Tải danh sách sự kiện của tôi từ API; lỗi chỉ được ghi log, danh sách giữ nguyên. */
   const fetchEvents = async () => {
     setIsLoading(true);
     try {
@@ -44,6 +49,7 @@ export default function OrganizerCenterScreen() {
     }, [user])
   );
 
+  /** Phân sự kiện vào tab `past` nếu đã quá giờ kết thúc hoặc trạng thái là kết thúc, ngược lại là `upcoming`. */
   const getEventTabStatus = (ev: EventData): string => {
     if (ev.endTime && new Date(ev.endTime) < new Date()) {
       return "past";
@@ -59,6 +65,7 @@ export default function OrganizerCenterScreen() {
     return matchesFilter && matchesSearch;
   });
 
+  /** Bật hoặc tắt ô tìm kiếm; khi đóng thì xóa từ khóa đang nhập. */
   const handleToggleSearch = () => {
     setIsSearchVisible(!isSearchVisible);
     if (isSearchVisible) {

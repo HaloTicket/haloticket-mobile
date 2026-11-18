@@ -1,3 +1,4 @@
+/** Sự kiện do backend trả về: thông tin cơ bản, ảnh, trạng thái, nhà tổ chức, nhân sự và các suất diễn. */
 export interface EventData {
   id?: string;
   title?: string;

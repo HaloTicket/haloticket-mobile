@@ -13,6 +13,7 @@ export const resources = {
   vi: { translation: vi },
 };
 
+/** Khởi tạo i18next với ngôn ngữ đã lưu, nếu chưa có thì theo ngôn ngữ thiết bị (vi hoặc en), mặc định dự phòng là en. */
 const initI18n = async () => {
   let savedLanguage = await storage.getItemAsync(LANGUAGE_KEY);
 
@@ -29,13 +30,14 @@ const initI18n = async () => {
       lng: savedLanguage,
       fallbackLng: "en",
       interpolation: {
-        escapeValue: false, // react already safe from xss
+        escapeValue: false, // React đã tự chống XSS
       },
     });
 };
 
 initI18n();
 
+/** Đổi ngôn ngữ hiện tại và lưu lại để lần mở sau dùng tiếp. */
 export const changeLanguage = async (lang: "en" | "vi") => {
   await i18n.changeLanguage(lang);
   await storage.setItemAsync(LANGUAGE_KEY, lang);

@@ -12,6 +12,11 @@ import { logError } from "@/utils/log";
 
 const SCAN_BOX_SIZE = 260;
 
+/**
+ * Màn hình quét QR để soát vé cho một sự kiện (và suất diễn nếu có `showtimeId`).
+ * Xin quyền camera, gửi mã QR tới `/tickets/checkin` rồi hiển thị kết quả (hợp lệ, đã dùng, bị khóa hoặc lỗi)
+ * kèm phản hồi rung.
+ */
 export default function CheckInScannerScreen() {
   const { eventId, showtimeId } = useLocalSearchParams<{ eventId: string; showtimeId?: string }>();
   const router = useRouter();
@@ -24,7 +29,7 @@ export default function CheckInScannerScreen() {
   const [status, setStatus] = useState<'idle' | 'success' | 'error' | 'warning'>('idle');
   const [message, setMessage] = useState('');
 
-  // Scanner Animation
+  // hiệu ứng vạch quét chạy lên xuống
   const scanLineAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -33,13 +38,13 @@ export default function CheckInScannerScreen() {
       animation = Animated.loop(
         Animated.sequence([
           Animated.timing(scanLineAnim, {
-            toValue: SCAN_BOX_SIZE - 4, // move to bottom
+            toValue: SCAN_BOX_SIZE - 4, // chạy xuống đáy khung
             duration: 1500,
             easing: Easing.linear,
             useNativeDriver: true,
           }),
           Animated.timing(scanLineAnim, {
-            toValue: 0, // move to top
+            toValue: 0, // chạy lên đỉnh khung
             duration: 1500,
             easing: Easing.linear,
             useNativeDriver: true,
@@ -70,6 +75,10 @@ export default function CheckInScannerScreen() {
     );
   }
 
+  /**
+   * Xử lý một mã QR vừa quét: gọi API check-in rồi đặt trạng thái và thông điệp theo kết quả.
+   * Lỗi 400, 403, 409, 503 được dịch sang thông điệp riêng theo mã lỗi của máy chủ.
+   */
   const handleBarCodeScanned = async ({ data }: { data: string }) => {
     setScanned(true);
     setStatus('idle');
@@ -81,8 +90,8 @@ export default function CheckInScannerScreen() {
         deviceInfo: Platform.OS + ' ' + Platform.Version,
         staffAssignmentId: user?.id || user?.email || 'unknown-staff'
       }, {
-        // the screen explains these itself by code: 400 (wrong event or showtime, outside the window, unknown ticket),
-        // 403 (this person may not scan this event), 409 (another gate scanned it first), 503 (access check unavailable)
+        // màn hình tự giải thích các lỗi này theo mã: 400 (sai sự kiện hoặc suất diễn, ngoài khung giờ, vé không tồn tại),
+        // 403 (người này không được quét sự kiện này), 409 (cổng khác đã quét trước), 503 (không kiểm tra được quyền truy cập)
         skipGlobalError: [400, 403, 409, 503],
       }) as any;
       if (checkinData.status === 'VALID' || checkinData.status === 'SUCCESS' || checkinData.code === 'SUCCESS') {

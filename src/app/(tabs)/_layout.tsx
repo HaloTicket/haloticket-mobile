@@ -3,6 +3,7 @@ import { useAppTheme } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
+/** Thanh tab dưới cùng của nhân viên: tab sự kiện (trang chủ) và tab hồ sơ cá nhân. */
 export default function StaffTabLayout() {
   const { colors } = useAppTheme();
   const { t } = useTranslation();
@@ -27,6 +28,7 @@ export default function StaffTabLayout() {
         options={{
           title: t("common.home"),
           tabBarLabel: t("common.home"),
+          /** Biểu tượng lịch của tab sự kiện. */
           tabBarIcon: ({ color, size }) => (
             <Ionicons
               name="calendar-outline"
@@ -41,6 +43,7 @@ export default function StaffTabLayout() {
         options={{
           title: t("common.profile"),
           tabBarLabel: t("common.profile"),
+          /** Biểu tượng người dùng của tab hồ sơ. */
           tabBarIcon: ({ color, size }) => (
             <Ionicons
               name="person-outline"

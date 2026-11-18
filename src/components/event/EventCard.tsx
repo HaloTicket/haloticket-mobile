@@ -5,10 +5,12 @@ import { useAppTheme } from "@/theme";
 import { EventData } from "@/types/event";
 import { useTranslation } from "react-i18next";
 
+/** Props của {@code EventCard}: sự kiện cần hiển thị. */
 interface EventCardProps {
   event: EventData;
 }
 
+/** Thẻ sự kiện trong danh sách: ảnh, tiêu đề và các nút hành động điều hướng tới trang chi tiết sự kiện. */
 export function EventCard({ event }: EventCardProps) {
   const { colors } = useAppTheme();
   const router = useRouter();

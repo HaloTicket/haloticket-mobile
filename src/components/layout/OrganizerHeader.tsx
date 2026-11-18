@@ -4,10 +4,12 @@ import { useAppTheme } from "@/theme";
 import { useTranslation } from "react-i18next";
 import { changeLanguage } from "@/locales/i18n";
 
+/** Thanh đầu trang của khu vực tổ chức, có nút đổi giao diện sáng/tối và đổi ngôn ngữ. */
 export function OrganizerHeader() {
   const { colors, isDark, toggleTheme } = useAppTheme();
   const { i18n } = useTranslation();
 
+  /** Chuyển ngôn ngữ giữa tiếng Việt và tiếng Anh. */
   const handleToggleLanguage = async () => {
     const newLang = i18n.language === "vi" ? "en" : "vi";
     await changeLanguage(newLang);

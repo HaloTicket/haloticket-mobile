@@ -8,10 +8,14 @@ import { ModalProvider } from "@/hooks/useModal";
 import { useFonts } from "expo-font";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-import "@/locales/i18n"; // initialize i18n
+import "@/locales/i18n"; // khởi tạo i18n
 
-LogBox.ignoreAllLogs(); // hide all warnings and errors from the screen overlay
+LogBox.ignoreAllLogs(); // ẩn mọi cảnh báo và lỗi khỏi lớp phủ trên màn hình
 
+/**
+ * Điều hướng theo trạng thái đăng nhập: chưa đăng nhập thì chuyển về trang đăng nhập,
+ * đã đăng nhập mà đang ở nhóm xác thực thì chuyển sang tab chính. Hiện vòng tải khi còn khôi phục phiên.
+ */
 function RootLayoutNav() {
   const { isAuthenticated, isLoading } = useAuth();
   const segments = useSegments();
@@ -24,10 +28,10 @@ function RootLayoutNav() {
     const inAuthGroup = segments[0] === "(auth)";
 
     if (!isAuthenticated && !inAuthGroup) {
-      // redirect to the login page.
+      // chuyển về trang đăng nhập.
       router.replace("/(auth)/login");
     } else if (isAuthenticated && inAuthGroup) {
-      // redirect to the tabs page.
+      // chuyển sang trang tab chính.
       router.replace("/(tabs)");
     }
   }, [isAuthenticated, isLoading, segments]);
@@ -48,6 +52,7 @@ function RootLayoutNav() {
   );
 }
 
+/** Gốc ứng dụng: nạp phông biểu tượng rồi bọc theme, hộp thoại và xác thực quanh {@code RootLayoutNav}. */
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     ...Ionicons.font,

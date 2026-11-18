@@ -15,6 +15,10 @@ if (isWeb && typeof window !== "undefined") {
   }
 }
 
+/**
+ * Cấu hình chạy của ứng dụng: địa chỉ API và Keycloak (đọc từ biến môi trường `EXPO_PUBLIC_*`,
+ * trên web chạy localhost thì dùng đúng hostname hiện tại), thời gian chờ và các khóa lưu trữ.
+ */
 export const CONFIG = {
   API_BASE_URL,
   KEYCLOAK_URL,

@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { changeLanguage } from "@/locales/i18n";
 
+/** Màn hình hồ sơ: thông tin tài khoản, đổi giao diện sáng/tối, đổi ngôn ngữ Việt/Anh và đăng xuất. */
 export default function ProfileScreen() {
   const { colors, isDark, toggleTheme } = useAppTheme();
   const { logout, user } = useAuth();
@@ -14,11 +15,13 @@ export default function ProfileScreen() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { t, i18n } = useTranslation();
 
+  /** Chuyển ngôn ngữ giữa tiếng Việt và tiếng Anh. */
   const handleToggleLanguage = async () => {
     const newLang = i18n.language === "vi" ? "en" : "vi";
     await changeLanguage(newLang);
   };
 
+  /** Hỏi xác nhận rồi đăng xuất, hiển thị trạng thái đang đăng xuất trong lúc chờ. */
   const handleLogout = () => {
     showConfirm(
       t("common.logout"),

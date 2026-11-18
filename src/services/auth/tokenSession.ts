@@ -3,7 +3,10 @@ import { CONFIG } from "@/constants/config";
 import { storage } from "@/utils/storage";
 import { createTokenRefresher, TokenSet, TokenSource } from "./tokenRefresher";
 
-// plain axios on purpose: axiosClient's own interceptors call refreshAccessToken, so using it here would loop
+/**
+ * Làm mới token qua backend (`/auth/refresh`).
+ * Dùng axios thuần có chủ đích: interceptor của axiosClient gọi refreshAccessToken nên dùng nó ở đây sẽ gây vòng lặp.
+ */
 async function refreshViaBackend(refreshToken: string): Promise<TokenSet> {
   const res = await axios.post(
     `${CONFIG.API_BASE_URL}/auth/refresh`,
@@ -13,6 +16,7 @@ async function refreshViaBackend(refreshToken: string): Promise<TokenSet> {
   return { accessToken: res.data?.accessToken, refreshToken: res.data?.refreshToken };
 }
 
+/** Làm mới token trực tiếp tại Keycloak bằng grant `refresh_token`. */
 async function refreshViaKeycloak(refreshToken: string): Promise<TokenSet> {
   const body = new URLSearchParams({
     grant_type: "refresh_token",
@@ -27,6 +31,7 @@ async function refreshViaKeycloak(refreshToken: string): Promise<TokenSet> {
   return { accessToken: res.data?.access_token, refreshToken: res.data?.refresh_token };
 }
 
+/** Lưu access token, nguồn token và refresh token (nếu có) vào bộ nhớ cục bộ. */
 export async function saveSession(tokens: TokenSet, source: TokenSource): Promise<void> {
   await storage.setItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN, tokens.accessToken);
   await storage.setItemAsync(CONFIG.STORAGE_KEYS.TOKEN_SOURCE, source);
@@ -35,17 +40,22 @@ export async function saveSession(tokens: TokenSet, source: TokenSource): Promis
   }
 }
 
+/** Xóa toàn bộ token và nguồn token đã lưu. */
 export async function clearSession(): Promise<void> {
   await storage.deleteItemAsync(CONFIG.STORAGE_KEYS.STAFF_TOKEN);
   await storage.deleteItemAsync(CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
   await storage.deleteItemAsync(CONFIG.STORAGE_KEYS.TOKEN_SOURCE);
 }
 
+/** Lấy access token mới từ refresh token đã lưu (dùng chung giữa các lời gọi đồng thời); null nếu không làm mới được. */
 export const refreshAccessToken = createTokenRefresher({
   store: {
+    /** Đọc refresh token đã lưu. */
     getRefreshToken: () => storage.getItemAsync(CONFIG.STORAGE_KEYS.REFRESH_TOKEN),
+    /** Đọc nguồn token đã lưu; mặc định là `backend` nếu không phải `keycloak`. */
     getSource: async () => ((await storage.getItemAsync(CONFIG.STORAGE_KEYS.TOKEN_SOURCE)) === "keycloak" ? "keycloak" : "backend"),
     save: saveSession,
+    /** Xóa refresh token đã lưu. */
     clearRefreshToken: () => storage.deleteItemAsync(CONFIG.STORAGE_KEYS.REFRESH_TOKEN),
   },
   refreshViaBackend,

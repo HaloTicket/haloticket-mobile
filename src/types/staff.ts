@@ -1,3 +1,4 @@
+/** Nhân viên soát vé: vai trò và sự kiện, cổng được phân công. */
 export interface StaffUser {
   id: string;
   name: string;
@@ -7,6 +8,7 @@ export interface StaffUser {
   assignedGate?: string;
 }
 
+/** Thông tin một cổng soát vé và số lượt đã check-in qua cổng đó. */
 export interface GateInfo {
   id: string;
   name: string;

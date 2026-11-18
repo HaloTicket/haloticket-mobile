@@ -1,5 +1,6 @@
 declare const __DEV__: boolean | undefined;
 
+/** Kết quả phân loại lỗi API: loại lỗi, có nên hiện hộp thoại không, kèm tiêu đề và nội dung (nếu có). */
 export interface ErrorClassification {
   type: "NO_RESPONSE" | "TIMEOUT" | "HTTP_ERROR" | "AUTH_UNAUTHORIZED" | "NOT_FOUND";
   shouldEmitModal: boolean;
@@ -7,6 +8,7 @@ export interface ErrorClassification {
   message?: string;
 }
 
+/** Tùy chọn phân loại lỗi: chế độ dev, địa chỉ API gốc và hàm dịch khóa. */
 export interface ErrorClassificationOptions {
   isDev?: boolean;
   baseUrl?: string;
@@ -20,6 +22,7 @@ const DEFAULT_STRINGS: Record<string, string> = {
   "errors.server_error_fallback": "Đã xảy ra lỗi khi kết nối máy chủ",
 };
 
+/** Dịch khóa bằng hàm `t` nếu có; nếu không thì dùng chuỗi mặc định hoặc `defaultValue` và tự thay các biến `{{tên}}`. */
 function translate(
   t: ((key: string, options?: any) => string) | undefined,
   key: string,
@@ -38,8 +41,8 @@ function translate(
 }
 
 /**
- * Extracts host (hostname + port) from a URL string,
- * avoiding leaking paths, query parameters, or sensitive tokens.
+ * Trích phần host (tên máy và cổng) từ chuỗi URL,
+ * tránh làm lộ đường dẫn, tham số truy vấn hoặc token nhạy cảm.
  */
 export function extractHost(urlStr?: string): string {
   if (!urlStr) return "";
@@ -54,13 +57,14 @@ export function extractHost(urlStr?: string): string {
 }
 
 /**
- * Creates an error throttler to prevent multiple duplicate error modals within a window (e.g. 3000ms).
+ * Tạo bộ chặn lỗi để không hiện nhiều hộp thoại lỗi trùng nhau trong một khoảng thời gian (ví dụ 3000ms).
  */
 export function createErrorThrottler(windowMs: number = 3000) {
   let lastTimestamp = 0;
   let lastKey = "";
 
   return {
+    /** Cho phép phát lỗi nếu khác khóa lần trước hoặc đã quá cửa sổ chặn, đồng thời ghi nhận lần phát mới. */
     shouldEmit(key: string, now: number = Date.now()): boolean {
       if (now - lastTimestamp < windowMs && lastKey === key) {
         return false;
@@ -69,10 +73,12 @@ export function createErrorThrottler(windowMs: number = 3000) {
       lastKey = key;
       return true;
     },
+    /** Xóa trạng thái đã ghi nhận để lỗi tiếp theo luôn được phát. */
     reset(): void {
       lastTimestamp = 0;
       lastKey = "";
     },
+    /** Trả về thời điểm (ms) của lần phát lỗi gần nhất, 0 nếu chưa có. */
     getLastTimestamp(): number {
       return lastTimestamp;
     },
@@ -80,12 +86,12 @@ export function createErrorThrottler(windowMs: number = 3000) {
 }
 
 /**
- * Classifies API error into:
+ * Phân loại lỗi API thành:
  * - AUTH_UNAUTHORIZED (401)
  * - NOT_FOUND (404)
- * - HTTP_ERROR (other status codes with response)
- * - TIMEOUT (no response, timeout code or message)
- * - NO_RESPONSE (network failure, unreachable server)
+ * - HTTP_ERROR (các mã trạng thái khác có phản hồi)
+ * - TIMEOUT (không có phản hồi, mã hoặc thông điệp báo quá thời gian)
+ * - NO_RESPONSE (mất mạng, không tới được máy chủ)
  */
 export function classifyApiError(
   error: any,
@@ -100,7 +106,7 @@ export function classifyApiError(
   const baseUrl = options?.baseUrl || (typeof process !== "undefined" ? process.env?.EXPO_PUBLIC_API_URL : "") || "http://10.0.2.2:8888/api";
   const t = options?.t;
 
-  // 1. Check HTTP response status
+  // 1. Kiểm tra mã trạng thái HTTP của phản hồi
   if (error?.response) {
     const status = error.response.status;
 
@@ -137,7 +143,7 @@ export function classifyApiError(
     };
   }
 
-  // 2. No response: Timeout or Network Error
+  // 2. Không có phản hồi: quá thời gian hoặc lỗi mạng
   const isTimeout =
     error?.code === "ECONNABORTED" ||
     error?.code === "ETIMEDOUT" ||

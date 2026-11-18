@@ -2,12 +2,14 @@ import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAppTheme } from "@/theme";
 
+/** Props của ô tìm kiếm: giá trị hiện tại, hàm nhận nội dung mới và gợi ý nhập (tùy chọn). */
 interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
 }
 
+/** Ô nhập tìm kiếm có biểu tượng kính lúp, dùng ở danh sách sự kiện. */
 export function SearchBar({ value, onChangeText, placeholder = "Tìm kiếm..." }: SearchBarProps) {
   const { colors } = useAppTheme();
 

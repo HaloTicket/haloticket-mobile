@@ -2,6 +2,7 @@ import { Redirect } from "expo-router";
 import { useAuth } from "@/hooks/useAuth";
 import { View, ActivityIndicator } from "react-native";
 
+/** Trang gốc `/`: tùy trạng thái đăng nhập mà chuyển tới tab chính hoặc trang đăng nhập. */
 export default function Index() {
   const { isAuthenticated, isLoading } = useAuth();
 

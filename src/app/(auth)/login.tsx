@@ -12,6 +12,10 @@ import { CONFIG } from "@/constants/config";
 
 WebBrowser.maybeCompleteAuthSession();
 
+/**
+ * Màn hình đăng nhập: email và mật khẩu qua `useAuth().login`, hoặc Google qua Keycloak (PKCE).
+ * Sau khi đổi mã thành công, token được đưa vào ngữ cảnh xác thực.
+ */
 export default function LoginScreen() {
   const { login, setAuthenticatedToken } = useAuth();
   const [email, setEmail] = useState("");
@@ -67,6 +71,7 @@ export default function LoginScreen() {
     }
   }, [response]);
 
+  /** Kiểm tra email và mật khẩu không rỗng rồi đăng nhập; lỗi được báo bằng hộp thoại. */
   const handleLogin = async () => {
     if (!email || !password) {
       showAlert(t("auth.error_title"), t("auth.error_empty"));
@@ -83,6 +88,7 @@ export default function LoginScreen() {
     }
   };
 
+  /** Mở luồng đăng nhập Google; nếu yêu cầu xác thực chưa sẵn sàng thì báo người dùng thử lại. */
   const handleGoogleLogin = () => {
     if (!request) {
       showAlert(t("auth.error_title"), "Đang kết nối tới máy chủ xác thực, vui lòng thử lại sau giây lát.");

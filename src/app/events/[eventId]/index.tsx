@@ -11,6 +11,11 @@ import { useTranslation } from "react-i18next";
 import { logError } from "@/utils/log";
 import { orderStatusInfo } from "@/utils/orderStatus";
 
+/**
+ * Bảng điều khiển của một sự kiện với 3 tab: doanh thu, check-in và đơn hàng.
+ * Có chọn suất diễn, kéo để làm mới và lối vào màn hình quét QR. Tab nào người dùng không đủ quyền xem
+ * thì hiện thông báo thay vì dữ liệu.
+ */
 export default function EventDashboardScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
   const { colors } = useAppTheme();
@@ -22,23 +27,27 @@ export default function EventDashboardScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [event, setEvent] = useState<EventData | null>(null);
   const [analytics, setAnalytics] = useState<any>(null);
-  // the person may scan tickets
+  // người dùng không có quyền xem thống kê (chỉ được quét vé)
   const [analyticsDenied, setAnalyticsDenied] = useState(false);
   const [ordersDenied, setOrdersDenied] = useState(false);
   
-  // orders
+  // đơn hàng
   const [orders, setOrders] = useState<any[]>([]);
   const [searchOrder, setSearchOrder] = useState("");
   const [isOrdersLoading, setIsOrdersLoading] = useState(false);
   
-  // checkins
+  // lượt check-in
   const [checkins, setCheckins] = useState<any[]>([]);
   const [isCheckinsLoading, setIsCheckinsLoading] = useState(false);
   const [checkinTab, setCheckinTab] = useState<"checkin" | "redeem">("checkin");
   
-  // showtimes
+  // suất diễn
   const [selectedShowtimeId, setSelectedShowtimeId] = useState<string>("");
 
+  /**
+   * Tải thông tin sự kiện và thống kê 30 ngày; nếu thống kê bị từ chối (403) thì đánh dấu và chuyển sang tab check-in.
+   * @param refresh - true khi người dùng kéo để làm mới (dùng chỉ báo làm mới thay vì vòng tải đầu trang)
+   */
   const fetchDashboardData = async (refresh = false) => {
     if (!eventId) return;
     if (refresh) {
@@ -64,6 +73,7 @@ export default function EventDashboardScreen() {
     }
   };
 
+  /** Tải danh sách check-in của sự kiện, lọc theo suất diễn đang chọn. */
   const fetchCheckins = async () => {
     if (!eventId) return;
     setIsCheckinsLoading(true);
@@ -77,6 +87,7 @@ export default function EventDashboardScreen() {
     }
   };
 
+  /** Làm mới dữ liệu chung cùng dữ liệu của tab đang mở (đơn hàng hoặc check-in). */
   const onRefresh = useCallback(() => {
     fetchDashboardData(true);
     if (activeTab === "orders") {
@@ -87,6 +98,7 @@ export default function EventDashboardScreen() {
     }
   }, [eventId, activeTab, searchOrder, selectedShowtimeId]);
 
+  /** Tải tối đa 100 đơn hàng theo từ khóa và suất diễn; ghi nhận nếu người dùng không có quyền xem đơn. */
   const fetchOrders = async () => {
     if (!eventId) return;
     setIsOrdersLoading(true);
@@ -116,10 +128,12 @@ export default function EventDashboardScreen() {
     }
   }, [activeTab, searchOrder, selectedShowtimeId]);
 
+  /** Đổi tab đang hiển thị. */
   const handleTabChange = (tab: "revenue" | "checkin" | "orders") => {
     setActiveTab(tab);
   };
   
+  /** Vòng tròn tiến độ SVG hiển thị phần trăm (0 đến 100) bằng màu truyền vào. */
   const CircularProgress = ({ percentage, color }: { percentage: number, color: string }) => {
     const size = 64;
     const strokeWidth = 6;
@@ -158,6 +172,7 @@ export default function EventDashboardScreen() {
     );
   };
 
+  /** Dải nút chọn suất diễn (kèm "Tất cả"); không hiển thị gì nếu sự kiện không có suất diễn. */
   const renderShowtimeSelector = () => {
     if (!event?.showtimes || event.showtimes.length === 0) return null;
     return (
@@ -194,6 +209,7 @@ export default function EventDashboardScreen() {
     );
   };
 
+  /** Tab doanh thu: tiến độ doanh thu và số vé bán so với mục tiêu, giới hạn tối đa 100%. */
   const renderRevenue = () => {
     const totalTarget = analytics?.totalRevenueTarget || 0;
     const currentRev = analytics?.currentRevenue || 0;
@@ -248,6 +264,10 @@ export default function EventDashboardScreen() {
     );
   };
 
+  /**
+   * Tab check-in: số lượt soát vé so với số vé đã bán, nút mở màn hình quét QR
+   * và lịch sử gần đây (chuyển qua lại giữa check-in và redeem).
+   */
   const renderCheckIn = () => {
     const filteredCheckins = checkins;
     const totalTicketsSold = analytics?.currentTicketsSold || 0;
@@ -322,6 +342,7 @@ export default function EventDashboardScreen() {
     );
   };
 
+  /** Tab đơn hàng: ô tìm kiếm, số lượng và danh sách đơn kèm trạng thái; hiện thông báo khi không có quyền hoặc không có đơn. */
   const renderOrders = () => (
     <View style={styles.tabContent}>
       {renderShowtimeSelector()}

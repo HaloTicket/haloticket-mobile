@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAppTheme } from "@/theme";
 import { useTranslation } from "react-i18next";
 
+/** Props của thanh lọc: tab đang chọn, hàm đổi tab và trạng thái ô tìm kiếm. */
 interface EventFilterTabsProps {
   filter: "upcoming" | "past";
   onFilterChange: (filter: "upcoming" | "past") => void;
@@ -10,6 +11,7 @@ interface EventFilterTabsProps {
   onToggleSearch: () => void;
 }
 
+/** Thanh chọn tab sự kiện sắp diễn ra hoặc đã qua, kèm nút bật tắt ô tìm kiếm. */
 export function EventFilterTabs({ filter, onFilterChange, onToggleSearch }: EventFilterTabsProps) {
   const { colors } = useAppTheme();
   const { t } = useTranslation();

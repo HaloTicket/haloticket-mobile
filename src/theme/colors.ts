@@ -1,3 +1,4 @@
+/** Bảng màu của ứng dụng cho giao diện sáng (`light`) và tối (`dark`). */
 export const Colors = {
   light: {
     primary: "#2563EB",

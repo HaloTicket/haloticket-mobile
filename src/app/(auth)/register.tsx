@@ -13,6 +13,10 @@ import { useTranslation } from "react-i18next";
 
 WebBrowser.maybeCompleteAuthSession();
 
+/**
+ * Màn hình đăng ký theo 3 bước: nhập email và mật khẩu, xác minh OTP 6 chữ số gửi qua email, rồi hoàn tất.
+ * Cũng cho phép đăng ký/đăng nhập bằng Google qua Keycloak.
+ */
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -84,6 +88,7 @@ export default function RegisterScreen() {
 
   const canContinue = email.trim() !== "" && password !== "" && confirmPassword !== "" && password === confirmPassword;
 
+  /** Gửi yêu cầu đăng ký (kèm khóa idempotency) để nhận mã OTP, chuyển sang bước OTP và đặt thời gian chờ gửi lại. */
   const handleRequestOtp = async () => {
     if (!canContinue) return;
     setIsLoading(true);
@@ -101,6 +106,7 @@ export default function RegisterScreen() {
     }
   };
 
+  /** Kiểm tra OTP đủ 6 số và chưa hết hạn, rồi xác minh với máy chủ; thành công thì sang bước hoàn tất. */
   const handleVerifyOtp = async () => {
     if (otp.length !== 6) {
       showAlert("Lỗi", "Mã OTP phải gồm 6 chữ số.");
@@ -123,6 +129,7 @@ export default function RegisterScreen() {
     }
   };
 
+  /** Yêu cầu gửi lại OTP cho thử thách hiện tại; bỏ qua khi chưa có thử thách hoặc còn đang chờ cooldown. */
   const handleResendOtp = async () => {
     if (!challenge || cooldown > 0) return;
     setIsLoading(true);
@@ -139,6 +146,7 @@ export default function RegisterScreen() {
     }
   };
 
+  /** Mở luồng đăng nhập Google; nếu yêu cầu xác thực chưa sẵn sàng thì báo người dùng thử lại. */
   const handleGoogleLogin = () => {
     if (!request) {
       showAlert("Lỗi", "Đang kết nối tới máy chủ xác thực, vui lòng thử lại sau giây lát.");

@@ -2,6 +2,7 @@ import { createContext, useContext, useState, ReactNode } from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Platform } from "react-native";
 import { useAppTheme } from "@/theme";
 
+/** Các hàm hiển thị hộp thoại thông báo hoặc xác nhận dùng chung toàn ứng dụng. */
 interface ModalContextData {
   showAlert: (title: string, message: string, onClose?: () => void) => void;
   showConfirm: (title: string, message: string, onConfirm: () => void, onCancel?: () => void) => void;
@@ -9,6 +10,7 @@ interface ModalContextData {
 
 const ModalContext = createContext<ModalContextData>({} as ModalContextData);
 
+/** Trạng thái hiện tại của hộp thoại: đang hiện hay không, loại, nội dung và các hàm gọi lại. */
 interface ModalState {
   visible: boolean;
   type: "alert" | "confirm";
@@ -18,6 +20,7 @@ interface ModalState {
   onCancel?: () => void;
 }
 
+/** Cung cấp hộp thoại thông báo và xác nhận, được vẽ một lần ở gốc ứng dụng. */
 export const ModalProvider = ({ children }: { children: ReactNode }) => {
   const [modalState, setModalState] = useState<ModalState>({
     visible: false,
@@ -27,23 +30,28 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
   });
   const { colors } = useAppTheme();
 
+  /** Hiện hộp thoại thông báo; `onClose` chạy khi người dùng đóng hộp thoại. */
   const showAlert = (title: string, message: string, onClose?: () => void) => {
     setModalState({ visible: true, type: "alert", title, message, onConfirm: onClose, onCancel: onClose });
   };
 
+  /** Hiện hộp thoại có hai nút; `onConfirm` chạy khi đồng ý, `onCancel` khi hủy. */
   const showConfirm = (title: string, message: string, onConfirm: () => void, onCancel?: () => void) => {
     setModalState({ visible: true, type: "confirm", title, message, onConfirm, onCancel });
   };
 
+  /** Ẩn hộp thoại nhưng giữ nguyên nội dung cũ để tránh nháy khi đóng. */
   const hideModal = () => {
     setModalState((prev) => ({ ...prev, visible: false }));
   };
 
+  /** Chạy hàm xác nhận (nếu có) rồi đóng hộp thoại. */
   const handleConfirm = () => {
     if (modalState.onConfirm) modalState.onConfirm();
     hideModal();
   };
 
+  /** Chạy hàm hủy (nếu có) rồi đóng hộp thoại; cũng dùng cho nút Back trên Android. */
   const handleCancel = () => {
     if (modalState.onCancel) modalState.onCancel();
     hideModal();
@@ -92,6 +100,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+/** Hook truy cập các hàm hiển thị hộp thoại; cần nằm trong {@code ModalProvider}. */
 export const useModal = () => useContext(ModalContext);
 
 const styles = StyleSheet.create({
