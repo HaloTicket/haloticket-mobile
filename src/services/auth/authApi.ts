@@ -8,13 +8,23 @@ export const AUTH_ENDPOINTS = {
   registerStart: "/auth/register/start",
   registerVerify: "/auth/register/verify",
   registerResend: "/auth/register/resend",
+  forgotStart: "/auth/password/forgot",
+  forgotVerify: "/auth/password/verify",
+  forgotResend: "/auth/password/resend",
+  resetPassword: "/auth/password/reset",
 } as const;
 
-/** Thử thách OTP khi đăng ký: mã định danh, hạn dùng và thời điểm được gửi lại (chuỗi ISO). */
+/** Thử thách OTP khi đăng ký hoặc quên mật khẩu: mã định danh, hạn dùng và thời điểm được gửi lại (chuỗi ISO). */
 export interface AuthChallengeResponse {
   challengeId: string;
   expiresAt: string;
   resendAvailableAt: string;
+}
+
+/** Phản hồi sau khi xác minh OTP quên mật khẩu: token đặt lại mật khẩu và thời điểm hết hạn. */
+export interface PasswordResetVerificationResponse {
+  resetToken: string;
+  expiresAt: string;
 }
 
 /** Phản hồi đăng nhập: access token, refresh token, id token (nếu có) và thời gian sống của token. */
@@ -97,6 +107,30 @@ export const authApi = {
   registerResend: (challengeId: string) => request<AuthChallengeResponse>(
     () => axiosClient.post(AUTH_ENDPOINTS.registerResend, { challengeId }),
     "Không thể gửi lại mã OTP đăng ký.",
+  ),
+
+  /** Bắt đầu quên mật khẩu: gửi mã OTP tới email hoặc số điện thoại đã đăng ký. */
+  forgotStart: (identifier: string, idempotencyKey: string) => request<AuthChallengeResponse>(
+    () => axiosClient.post(AUTH_ENDPOINTS.forgotStart, { identifier, idempotencyKey }),
+    "Không thể gửi mã khôi phục mật khẩu.",
+  ),
+
+  /** Xác minh mã OTP quên mật khẩu, trả về token đặt lại mật khẩu. */
+  forgotVerify: (challengeId: string, otp: string) => request<PasswordResetVerificationResponse>(
+    () => axiosClient.post(AUTH_ENDPOINTS.forgotVerify, { challengeId, otp }),
+    "Mã OTP khôi phục không hợp lệ hoặc đã hết hạn.",
+  ),
+
+  /** Gửi lại mã OTP quên mật khẩu cho thử thách đang có. */
+  forgotResend: (challengeId: string) => request<AuthChallengeResponse>(
+    () => axiosClient.post(AUTH_ENDPOINTS.forgotResend, { challengeId }),
+    "Không thể gửi lại mã OTP khôi phục.",
+  ),
+
+  /** Đặt mật khẩu mới bằng token đặt lại nhận được sau bước xác minh OTP. */
+  resetPassword: (resetToken: string, password: string) => request<void>(
+    () => axiosClient.post(AUTH_ENDPOINTS.resetPassword, { resetToken, password }),
+    "Không thể đặt lại mật khẩu.",
   ),
 };
 
