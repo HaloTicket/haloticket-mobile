@@ -42,34 +42,13 @@
     "suggestStats": "How many tickets still need checking in?",
     "suggestDuplicate": "What should I do with a used ticket?",
     "guides": {
-      "used": {
-        "title": "Ticket already checked in",
-        "detail": "Check the event history for the earlier scan. If there's a dispute, ask the shift lead to verify it before admitting the guest."
-      },
-      "wrongScope": {
-        "title": "Wrong event or showtime",
-        "detail": "Check the event name and time on the ticket. Open the matching event and showtime in the app, then scan again."
-      },
-      "locked": {
-        "title": "Ticket locked or missing",
-        "detail": "Ask the guest to open the original HaloTicket ticket. If the error persists, ask the organizer to verify the ticket status."
-      },
-      "window": {
-        "title": "Outside the check-in window",
-        "detail": "Verify the gate hours for this showtime with the organizer. Try again when the gate opens."
-      },
-      "access": {
-        "title": "No check-in permission",
-        "detail": "Check which account is signed in. Ask the organizer to verify your assignment for the event."
-      },
-      "camera": {
-        "title": "Camera won't scan",
-        "detail": "Grant camera access in settings, clean the lens, brighten the ticket screen, and hold the QR code inside the scan frame."
-      },
-      "network": {
-        "title": "Offline or system error",
-        "detail": "Check Wi-Fi or mobile data and retry. Wait for the scanner to confirm the result before admitting the guest."
-      }
+      "used": { "title": "Ticket already checked in", "detail": "Check the event history for the earlier scan. If there's a dispute, ask the shift lead to verify it before admitting the guest." },
+      "wrongScope": { "title": "Wrong event or showtime", "detail": "Check the event name and time on the ticket. Open the matching event and showtime in the app, then scan again." },
+      "locked": { "title": "Ticket locked or missing", "detail": "Ask the guest to open the original HaloTicket ticket. If the error persists, ask the organizer to verify the ticket status." },
+      "window": { "title": "Outside the check-in window", "detail": "Verify the gate hours for this showtime with the organizer. Try again when the gate opens." },
+      "access": { "title": "No check-in permission", "detail": "Check which account is signed in. Ask the organizer to verify your assignment for the event." },
+      "camera": { "title": "Camera won't scan", "detail": "Grant camera access in settings, clean the lens, brighten the ticket screen, and hold the QR code inside the scan frame." },
+      "network": { "title": "Offline or system error", "detail": "Check Wi-Fi or mobile data and retry. Wait for the scanner to confirm the result before admitting the guest." }
     }
   },
   "common": {
@@ -93,6 +72,10 @@
   "auth": {
     "login_title": "Login",
     "welcome": "Welcome back to HaloTicket!",
+    "welcome_headline": "Manage events effortlessly",
+    "welcome_subtitle": "Built exclusively for Event Organizers\nand on-site operations teams",
+    "register_btn": "Register",
+    "remember_me": "Remember me",
     "email": "Email",
     "email_placeholder": "Enter your email",
     "password": "Password",
@@ -128,14 +111,6 @@
     "back_email": "← Change registration email",
     "reenter_password": "Re-enter password",
     "password_mismatch": "Passwords do not match.",
-    "continue": "Continue",
-    "done_success": "Your email has been verified successfully! You can now login.",
-    "auth_error": "An error occurred during authentication.",
-    "login_error": "Sign in failed",
-    "welcome_headline": "Manage events effortlessly",
-    "welcome_subtitle": "Built exclusively for Event Organizers\nand on-site operations teams",
-    "register_btn": "Register",
-    "remember_me": "Remember me",
     "password_valid": "Valid password",
     "password_invalid": "Password does not meet requirements",
     "password_rule_length": "8 - 32 characters",
@@ -160,13 +135,21 @@
     "otp_resend_error": "Unable to resend OTP.",
     "reset_title": "Reset Password",
     "reset_subtitle_prefix": "Create a new password for ",
+    "new_password": "New password",
+    "new_password_placeholder": "Enter new password",
+    "confirm_new_password": "Confirm new password",
+    "confirm_new_password_placeholder": "Re-enter new password",
     "reset_btn": "Reset Password",
     "reset_session_expired": "Password reset session is invalid or has expired.",
     "reset_error": "Unable to reset password.",
     "reset_done_title": "Password Updated",
     "reset_done_subtitle": "Your password has been updated.",
     "reset_done_message": "Your password has been updated successfully! You can now sign in.",
-    "back_to_login": "Back to login"
+    "back_to_login": "Back to login",
+    "continue": "Continue",
+    "done_success": "Your email has been verified successfully! You can now login.",
+    "auth_error": "An error occurred during authentication.",
+    "login_error": "Sign in failed"
   },
   "dashboard": {
     "no_stats_permission": "You do not have permission to view statistics",
@@ -219,6 +202,12 @@
     "ticket_already_used_other_gate": "TICKET ALREADY USED AT ANOTHER GATE (Double-scan)!",
     "ticket_wrong_event": "TICKET DOES NOT BELONG TO THIS EVENT!",
     "ticket_wrong_showtime": "TICKET DOES NOT BELONG TO THIS SHOWTIME!",
+    "point_camera_qr": "Point your camera at the QR code",
+    "manual_code_btn": "Enter ticket code manually",
+    "manual_code_title": "Manual ticket check-in",
+    "manual_code_placeholder": "Enter QR code / ticket code...",
+    "manual_code_submit": "Verify ticket",
+    "checking_ticket": "Verifying ticket...",
     "ticket_label": "Ticket: ",
     "free_zone": "Free Zone",
     "scan_qr_title": "Scan QR Code",
