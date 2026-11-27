@@ -126,5 +126,23 @@
     "network_error_message": "Vui lòng kiểm tra lại kết nối Wi-Fi và địa chỉ máy chủ.",
     "network_error_dev_hint": "Máy chủ: {{host}}",
     "server_error_fallback": "Đã xảy ra lỗi khi kết nối máy chủ"
+  },
+  "notifications": {
+    "title": "Hộp thư nhân viên",
+    "subtitle": "Thông báo từ ban tổ chức",
+    "unread_count": "{{count}} chưa đọc",
+    "all_read": "Đã đọc tất cả",
+    "empty_title": "Chưa có thông báo nào",
+    "empty_description": "Thông báo từ ban tổ chức sự kiện sẽ hiển thị tại đây.",
+    "error_title": "Không thể tải thông báo",
+    "error_description": "Vui lòng kiểm tra kết nối và thử lại.",
+    "retry": "Thử lại",
+    "mark_read": "Đánh dấu đã đọc",
+    "marking_read": "Đang cập nhật...",
+    "read_badge": "Đã đọc",
+    "unread_badge": "Chưa đọc",
+    "staff_channel": "Nhân viên",
+    "missing_user": "Không xác định được tài khoản hiện tại.",
+    "mark_read_error": "Không thể đánh dấu đã đọc. Vui lòng thử lại."
   }
 }

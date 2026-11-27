@@ -126,5 +126,23 @@
     "network_error_message": "Please check your Wi-Fi connection and server address.",
     "network_error_dev_hint": "Server: {{host}}",
     "server_error_fallback": "An error occurred while connecting to the server"
+  },
+  "notifications": {
+    "title": "Staff Inbox",
+    "subtitle": "Organizer & staff updates",
+    "unread_count": "{{count}} unread",
+    "all_read": "All caught up",
+    "empty_title": "No notifications yet",
+    "empty_description": "Updates from your event organizer will appear here.",
+    "error_title": "Could not load notifications",
+    "error_description": "Please check your connection and try again.",
+    "retry": "Retry",
+    "mark_read": "Mark as read",
+    "marking_read": "Marking...",
+    "read_badge": "Read",
+    "unread_badge": "Unread",
+    "staff_channel": "Staff",
+    "missing_user": "Unable to identify the current user.",
+    "mark_read_error": "Could not mark notification as read. Please try again."
   }
 }
