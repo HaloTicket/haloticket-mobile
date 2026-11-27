@@ -1,6 +1,6 @@
 import { USE_NATIVE_ANIMATION_DRIVER } from "@/utils/animationDriver";
 import { useEffect, useRef, useState } from "react";
-import { Animated, Easing, View, Text, StyleSheet, Image, ActivityIndicator, Platform } from "react-native";
+import { Animated, Easing, View, Text, StyleSheet, Image, ActivityIndicator, Platform, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { ScreenBackground } from "@/components/layout/ScreenBackground";
@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useModal } from "@/hooks/useModal";
 import { useTranslation } from "react-i18next";
 import { changeLanguage } from "@/locales/i18n";
+import { useResponsive } from "@/hooks/useResponsive";
 
 /** Màn hình hồ sơ: thông tin tài khoản, đổi giao diện sáng/tối, đổi ngôn ngữ Việt/Anh và đăng xuất. */
 export default function ProfileScreen() {
@@ -19,6 +20,7 @@ export default function ProfileScreen() {
   const { showConfirm } = useModal();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { t, i18n } = useTranslation();
+  const { horizontalPadding, isCompact } = useResponsive();
 
   const themeSpin = useRef(new Animated.Value(isDark ? 1 : 0)).current;
   const langSpin = useRef(new Animated.Value(0)).current;
@@ -89,20 +91,25 @@ export default function ProfileScreen() {
   return (
     <ScreenBackground>
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-        <View style={styles.container}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[styles.scrollContent, { paddingHorizontal: horizontalPadding }]}
+        >
+          <View style={styles.container}>
             <FadeSlideIn distance={10} duration={240}>
-              <View style={styles.header}>
-                <Text style={[styles.headerTitle, { color: colors.text }]}>
+              <View style={[styles.header, isCompact && { marginBottom: 16 }]}>
+                <Text style={[styles.headerTitle, { color: colors.text }, isCompact && { fontSize: 22 }]}>
                   {t("common.profile")}
                 </Text>
               </View>
 
-              <View style={styles.profileSection}>
+              <View style={[styles.profileSection, isCompact && { marginBottom: 22 }]}>
                 {user?.picture ? (
                   <Image
                     source={{ uri: user.picture }}
                     style={[
                       styles.avatar,
+                      isCompact && { width: 54, height: 54, borderRadius: 27, marginRight: 12 },
                       { backgroundColor: colors.surface },
                     ]}
                   />
@@ -110,14 +117,15 @@ export default function ProfileScreen() {
                   <View
                     style={[
                       styles.avatar,
+                      isCompact && { width: 54, height: 54, borderRadius: 27, marginRight: 12 },
                       { backgroundColor: colors.surface },
                     ]}
                   >
-                    <Ionicons name="person" size={40} color={colors.textSecondary} />
+                    <Ionicons name="person" size={isCompact ? 32 : 40} color={colors.textSecondary} />
                   </View>
                 )}
                 <View style={styles.info}>
-                  <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
+                  <Text style={[styles.name, { color: colors.text }, isCompact && { fontSize: 16 }]} numberOfLines={1}>
                     {user?.name || user?.preferred_username || t("common.admin")}
                   </Text>
                   <Text style={[styles.email, { color: colors.textSecondary }]} numberOfLines={1}>
@@ -180,7 +188,8 @@ export default function ProfileScreen() {
               </AnimatedPressable>
             </View>
           </FadeSlideIn>
-        </View>
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </ScreenBackground>
   );

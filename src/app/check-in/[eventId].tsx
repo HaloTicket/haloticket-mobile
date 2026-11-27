@@ -29,8 +29,7 @@ import { useAuth } from "@/hooks/useAuth";
 import * as Haptics from "expo-haptics";
 import { useTranslation } from "react-i18next";
 import { logError } from "@/utils/log";
-
-const SCAN_BOX_SIZE = 256;
+import { useResponsive } from "@/hooks/useResponsive";
 
 /** Định dạng thời gian sự kiện / suất diễn giống mẫu: "17:30 - 19:30, 01 Tháng 06, 2024". */
 function formatEventSchedule(
@@ -83,11 +82,8 @@ export default function CheckInScannerScreen() {
   const { colors } = useAppTheme();
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
-  const scanBoxSize = SCAN_BOX_SIZE;
-  const cornerSize = 38;
-  const isCompact = false;
-  const isLandscape = false;
-  const horizontalPadding = 16;
+  const { scanBoxSize, isCompact, isLandscape, horizontalPadding } = useResponsive();
+  const cornerSize = isCompact || isLandscape ? 28 : 38;
 
   const [permission, requestPermission] = useCameraPermissions();
   const [eventInfo, setEventInfo] = useState<EventData | null>(null);

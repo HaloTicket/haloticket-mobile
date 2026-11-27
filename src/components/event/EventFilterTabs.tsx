@@ -6,6 +6,7 @@ import * as Haptics from "expo-haptics";
 import { useAppTheme } from "@/theme";
 import { useTranslation } from "react-i18next";
 import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
+import { useResponsive } from "@/hooks/useResponsive";
 
 /** Props của thanh lọc: tab đang chọn, hàm đổi tab và trạng thái ô tìm kiếm. */
 interface EventFilterTabsProps {
@@ -19,6 +20,7 @@ interface EventFilterTabsProps {
 export function EventFilterTabs({ filter, onFilterChange, isSearchVisible, onToggleSearch }: EventFilterTabsProps) {
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
+  const { isCompact } = useResponsive();
   const inactiveChipBg = isDark ? "rgba(12, 24, 56, 0.72)" : "rgba(255, 255, 255, 0.78)";
   const searchRotate = useRef(new Animated.Value(isSearchVisible ? 1 : 0)).current;
 
@@ -44,7 +46,7 @@ export function EventFilterTabs({ filter, onFilterChange, isSearchVisible, onTog
   };
 
   return (
-    <View style={styles.filterRow}>
+    <View style={[styles.filterRow, isCompact && { gap: 8, marginBottom: 14 }]}>
       <AnimatedPressable
         scaleTo={0.88}
         contentStyle={[
@@ -65,6 +67,7 @@ export function EventFilterTabs({ filter, onFilterChange, isSearchVisible, onTog
         scaleTo={0.94}
         contentStyle={[
           styles.filterBtn,
+          isCompact && { paddingHorizontal: 14, paddingVertical: 7 },
           filter === "upcoming"
             ? { backgroundColor: colors.primary }
             : { backgroundColor: inactiveChipBg, borderColor: colors.border, borderWidth: 1 },
@@ -74,6 +77,7 @@ export function EventFilterTabs({ filter, onFilterChange, isSearchVisible, onTog
         <Text
           style={[
             styles.filterText,
+            isCompact && { fontSize: 13 },
             filter === "upcoming"
               ? { color: "#fff", fontWeight: "600" }
               : { color: colors.textSecondary },
@@ -86,6 +90,7 @@ export function EventFilterTabs({ filter, onFilterChange, isSearchVisible, onTog
         scaleTo={0.94}
         contentStyle={[
           styles.filterBtn,
+          isCompact && { paddingHorizontal: 14, paddingVertical: 7 },
           filter === "past"
             ? { backgroundColor: colors.primary }
             : { backgroundColor: inactiveChipBg, borderColor: colors.border, borderWidth: 1 },
@@ -95,6 +100,7 @@ export function EventFilterTabs({ filter, onFilterChange, isSearchVisible, onTog
         <Text
           style={[
             styles.filterText,
+            isCompact && { fontSize: 13 },
             filter === "past"
               ? { color: "#fff", fontWeight: "600" }
               : { color: colors.textSecondary },
@@ -110,6 +116,7 @@ export function EventFilterTabs({ filter, onFilterChange, isSearchVisible, onTog
 const styles = StyleSheet.create({
   filterRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     marginBottom: 20,
     gap: 12,

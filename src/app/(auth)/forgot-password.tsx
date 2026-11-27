@@ -32,6 +32,7 @@ import {
   secondsUntil,
 } from "@/services/auth/authApi";
 import { isPasswordValid } from "@/utils/passwordRules";
+import { useResponsive } from "@/hooks/useResponsive";
 
 const HALO_LOGO_LIGHT = require("../../../assets/haloticket-logo.png");
 const HALO_LOGO_DARK = require("../../../assets/haloticket-logo-dark.png");
@@ -46,8 +47,9 @@ export default function ForgotPasswordScreen() {
   const { colors: theme, isDark } = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const logoWidth = 176;
-  const logoHeight = 110;
+  const { authMaxWidth, horizontalPadding, isCompact, isLandscape } = useResponsive();
+  const logoWidth = isCompact || isLandscape ? 140 : 176;
+  const logoHeight = Math.round(logoWidth * 0.625);
 
   const [step, setStep] = useState<ForgotStep>("form");
   const [identifier, setIdentifier] = useState("");
@@ -230,16 +232,16 @@ export default function ForgotPasswordScreen() {
             contentContainerStyle={[
               styles.scrollContent,
               {
-                paddingHorizontal: 20,
-                paddingBottom: 60,
+                paddingHorizontal: horizontalPadding,
+                paddingBottom: isLandscape ? 28 : 48,
               },
             ]}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <View style={styles.authPanel}>
+            <View style={[styles.authPanel, { maxWidth: authMaxWidth }]}>
               <FadeSlideIn distance={14} duration={280}>
-                <View style={styles.header}>
+                <View style={[styles.header, isLandscape && { marginBottom: 14 }]}>
                   <View style={[styles.logoWrapper, { width: logoWidth, height: logoHeight }]}>
                     <Image
                       source={HALO_LOGO_LIGHT}
@@ -261,7 +263,7 @@ export default function ForgotPasswordScreen() {
                   <Text
                     style={[
                       styles.title,
-                      { color: ui.title, fontSize: 28 },
+                      { color: ui.title, fontSize: isCompact ? 24 : 28 },
                     ]}
                   >
                     {headerTitle}

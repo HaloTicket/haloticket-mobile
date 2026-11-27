@@ -15,6 +15,7 @@ import { EventData } from "@/types/event";
 import { useTranslation } from "react-i18next";
 import { logError } from "@/utils/log";
 import { orderStatusInfo } from "@/utils/orderStatus";
+import { useResponsive } from "@/hooks/useResponsive";
 
 /**
  * Bảng điều khiển của một sự kiện với 3 tab: doanh thu, check-in và đơn hàng.
@@ -27,10 +28,8 @@ export default function EventDashboardScreen() {
   const inactiveChipBg = isDark ? "transparent" : "rgba(255, 255, 255, 0.78)";
   const router = useRouter();
   const { t } = useTranslation();
-  const isCompact = false;
-  const isTablet = false;
-  const horizontalPadding = 16;
-  const maxContainerWidth = 9999;
+  const { isCompact, isTablet, horizontalPadding, contentMaxWidth } = useResponsive();
+  const maxContainerWidth = Math.min(contentMaxWidth, 920);
   
   const [activeTab, setActiveTab] = useState<"revenue" | "checkin" | "orders">("revenue");
   const [isLoading, setIsLoading] = useState(true);

@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Defs, LinearGradient, Path, Rect, Stop } from "react-native-svg";
 import { useAppTheme } from "@/theme";
 import { ScreenBackground } from "@/components/layout/ScreenBackground";
+import { useResponsive } from "@/hooks/useResponsive";
 
 const HALO_LOGO_LIGHT = require("../../../assets/haloticket-logo.png");
 const HALO_LOGO_DARK = require("../../../assets/haloticket-logo-dark.png");
@@ -114,10 +115,11 @@ function FlyingStarIcon({ isDark }: { isDark: boolean }) {
  */
 export function AppSplashScreen({ isAppReady, onFinish }: AppSplashScreenProps) {
   const { isDark } = useAppTheme();
-  const trackWidth = 264;
+  const { splashTrackWidth, isCompact, isLandscape } = useResponsive();
+  const trackWidth = splashTrackWidth;
   const innerWidth = trackWidth - 4;
-  const logoWidth = 230;
-  const logoHeight = 144;
+  const logoWidth = isLandscape ? 176 : isCompact ? 196 : 230;
+  const logoHeight = Math.round(logoWidth * (144 / 230));
   const [percent, setPercent] = useState(0);
 
   const progress = useRef(new Animated.Value(0)).current;
@@ -286,7 +288,7 @@ export function AppSplashScreen({ isAppReady, onFinish }: AppSplashScreenProps) 
             style={[
               styles.centerContent,
               {
-                marginBottom: 44,
+                marginBottom: isLandscape ? 12 : 44,
                 opacity: entranceOpacity,
                 transform: [{ scale: entranceScale }],
               },
@@ -294,7 +296,7 @@ export function AppSplashScreen({ isAppReady, onFinish }: AppSplashScreenProps) 
           >
             <Image
               source={isDark ? HALO_LOGO_DARK : HALO_LOGO_LIGHT}
-              style={{ width: logoWidth, height: logoHeight, marginBottom: 14 }}
+              style={{ width: logoWidth, height: logoHeight, marginBottom: isLandscape ? 8 : 14 }}
               resizeMode="contain"
               fadeDuration={0}
             />
@@ -303,7 +305,7 @@ export function AppSplashScreen({ isAppReady, onFinish }: AppSplashScreenProps) 
               style={[
                 styles.badge,
                 isDark ? styles.badgeDark : styles.badgeLight,
-                { marginBottom: 36 },
+                { marginBottom: isLandscape ? 18 : 36 },
               ]}
             >
               <Text style={[styles.badgeText, { color: isDark ? "#F8FAFC" : "#1B3B7B" }]}>
