@@ -42,34 +42,13 @@
     "suggestStats": "Còn bao nhiêu vé chưa check-in?",
     "suggestDuplicate": "Xử lý vé đã dùng thế nào?",
     "guides": {
-      "used": {
-        "title": "Vé đã check-in",
-        "detail": "Kiểm tra lần quét trước trong lịch sử sự kiện. Nếu có tranh chấp, báo trưởng ca xác minh trước khi cho khách vào."
-      },
-      "wrongScope": {
-        "title": "Sai sự kiện hoặc suất diễn",
-        "detail": "Đối chiếu tên sự kiện và giờ trên vé. Mở đúng sự kiện và suất diễn trong app rồi quét lại."
-      },
-      "locked": {
-        "title": "Vé bị khóa hoặc không tìm thấy",
-        "detail": "Yêu cầu khách mở vé gốc trong HaloTicket. Nếu app vẫn báo lỗi, chuyển cho ban tổ chức kiểm tra trạng thái vé."
-      },
-      "window": {
-        "title": "Ngoài giờ check-in",
-        "detail": "Đối chiếu giờ mở và đóng cổng của suất diễn với ban tổ chức. Quét lại khi cổng được mở."
-      },
-      "access": {
-        "title": "Chưa có quyền check-in",
-        "detail": "Kiểm tra tài khoản đang đăng nhập. Nhờ ban tổ chức xác nhận phân công của bạn cho sự kiện."
-      },
-      "camera": {
-        "title": "Camera không quét được",
-        "detail": "Cấp quyền camera trong cài đặt, lau ống kính, tăng sáng màn hình vé và giữ mã QR trong khung quét."
-      },
-      "network": {
-        "title": "Mất mạng hoặc lỗi hệ thống",
-        "detail": "Kiểm tra Wi-Fi hoặc dữ liệu di động rồi thử lại. Chờ màn hình quét xác nhận kết quả trước khi cho khách vào."
-      }
+      "used": { "title": "Vé đã check-in", "detail": "Kiểm tra lần quét trước trong lịch sử sự kiện. Nếu có tranh chấp, báo trưởng ca xác minh trước khi cho khách vào." },
+      "wrongScope": { "title": "Sai sự kiện hoặc suất diễn", "detail": "Đối chiếu tên sự kiện và giờ trên vé. Mở đúng sự kiện và suất diễn trong app rồi quét lại." },
+      "locked": { "title": "Vé bị khóa hoặc không tìm thấy", "detail": "Yêu cầu khách mở vé gốc trong HaloTicket. Nếu app vẫn báo lỗi, chuyển cho ban tổ chức kiểm tra trạng thái vé." },
+      "window": { "title": "Ngoài giờ check-in", "detail": "Đối chiếu giờ mở và đóng cổng của suất diễn với ban tổ chức. Quét lại khi cổng được mở." },
+      "access": { "title": "Chưa có quyền check-in", "detail": "Kiểm tra tài khoản đang đăng nhập. Nhờ ban tổ chức xác nhận phân công của bạn cho sự kiện." },
+      "camera": { "title": "Camera không quét được", "detail": "Cấp quyền camera trong cài đặt, lau ống kính, tăng sáng màn hình vé và giữ mã QR trong khung quét." },
+      "network": { "title": "Mất mạng hoặc lỗi hệ thống", "detail": "Kiểm tra Wi-Fi hoặc dữ liệu di động rồi thử lại. Chờ màn hình quét xác nhận kết quả trước khi cho khách vào." }
     }
   },
   "common": {
@@ -93,6 +72,10 @@
   "auth": {
     "login_title": "Đăng nhập",
     "welcome": "Chào mừng bạn quay trở lại HaloTicket!",
+    "welcome_headline": "Quản lý sự kiện dễ dàng hơn",
+    "welcome_subtitle": "Dành riêng cho Ban tổ chức (BTC) và\nđội ngũ vận hành sự kiện",
+    "register_btn": "Đăng ký",
+    "remember_me": "Ghi nhớ đăng nhập",
     "email": "Email",
     "email_placeholder": "Nhập email của bạn",
     "password": "Mật khẩu",
@@ -128,14 +111,6 @@
     "back_email": "← Thay đổi email đăng ký",
     "reenter_password": "Nhập lại mật khẩu",
     "password_mismatch": "Mật khẩu xác nhận chưa khớp.",
-    "continue": "Tiếp tục",
-    "done_success": "Email của bạn đã được xác minh thành công! Bây giờ bạn có thể đăng nhập.",
-    "auth_error": "Đã có lỗi xảy ra khi xác thực.",
-    "login_error": "Đăng nhập thất bại",
-    "welcome_headline": "Quản lý sự kiện dễ dàng hơn",
-    "welcome_subtitle": "Dành riêng cho Ban tổ chức (BTC) và\nđội ngũ vận hành sự kiện",
-    "register_btn": "Đăng ký",
-    "remember_me": "Ghi nhớ đăng nhập",
     "password_valid": "Mật khẩu hợp lệ",
     "password_invalid": "Mật khẩu chưa hợp lệ",
     "password_rule_length": "Từ 8 - 32 ký tự",
@@ -160,13 +135,21 @@
     "otp_resend_error": "Không thể gửi lại mã OTP.",
     "reset_title": "Đặt lại mật khẩu",
     "reset_subtitle_prefix": "Tạo mật khẩu mới cho ",
+    "new_password": "Mật khẩu mới",
+    "new_password_placeholder": "Nhập mật khẩu mới",
+    "confirm_new_password": "Nhập lại mật khẩu mới",
+    "confirm_new_password_placeholder": "Nhập lại mật khẩu mới",
     "reset_btn": "Đặt lại mật khẩu",
     "reset_session_expired": "Phiên đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.",
     "reset_error": "Không thể đặt lại mật khẩu.",
     "reset_done_title": "Hoàn tất đặt lại mật khẩu",
     "reset_done_subtitle": "Mật khẩu của bạn đã được cập nhật.",
     "reset_done_message": "Mật khẩu đã được cập nhật thành công! Bây giờ bạn có thể đăng nhập lại.",
-    "back_to_login": "Quay lại đăng nhập"
+    "back_to_login": "Quay lại đăng nhập",
+    "continue": "Tiếp tục",
+    "done_success": "Email của bạn đã được xác minh thành công! Bây giờ bạn có thể đăng nhập.",
+    "auth_error": "Đã có lỗi xảy ra khi xác thực.",
+    "login_error": "Đăng nhập thất bại"
   },
   "dashboard": {
     "no_stats_permission": "Bạn không có quyền xem thống kê",
@@ -219,6 +202,12 @@
     "ticket_already_used_other_gate": "VÉ ĐÃ ĐƯỢC SỬ DỤNG TẠI CỔNG KHÁC (Double-scan)!",
     "ticket_wrong_event": "VÉ KHÔNG THUỘC SỰ KIỆN NÀY!",
     "ticket_wrong_showtime": "VÉ KHÔNG THUỘC SUẤT DIỄN NÀY!",
+    "point_camera_qr": "Hướng Camera về phía mã QR",
+    "manual_code_btn": "Nhập mã code number",
+    "manual_code_title": "Nhập mã vé thủ công",
+    "manual_code_placeholder": "Nhập mã QR / mã vé...",
+    "manual_code_submit": "Kiểm tra vé",
+    "checking_ticket": "Đang kiểm tra vé...",
     "ticket_label": "Vé: ",
     "free_zone": "Khu vực tự do",
     "scan_qr_title": "Quét mã QR",
