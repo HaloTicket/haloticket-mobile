@@ -37,6 +37,7 @@ import { CONFIG } from "@/constants/config";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { isPasswordValid } from "@/utils/passwordRules";
+import { useResponsive } from "@/hooks/useResponsive";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -64,8 +65,9 @@ export default function RegisterScreen() {
   const { showAlert } = useModal();
   const { setAuthenticatedToken } = useAuth();
   const { t } = useTranslation();
-  const logoWidth = 176;
-  const logoHeight = 110;
+  const { authMaxWidth, horizontalPadding, isCompact, isLandscape } = useResponsive();
+  const logoWidth = isCompact || isLandscape ? 140 : 176;
+  const logoHeight = Math.round(logoWidth * 0.625);
 
   const discovery = AuthSession.useAutoDiscovery(`${CONFIG.KEYCLOAK_URL}/realms/${CONFIG.KEYCLOAK_REALM}`);
   const redirectUri = AuthSession.makeRedirectUri({ path: "login" });
@@ -257,16 +259,16 @@ export default function RegisterScreen() {
             contentContainerStyle={[
               styles.scrollContent,
               {
-                paddingHorizontal: 20,
-                paddingBottom: 60,
+                paddingHorizontal: horizontalPadding,
+                paddingBottom: isLandscape ? 28 : 48,
               },
             ]}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <View style={styles.authPanel}>
+            <View style={[styles.authPanel, { maxWidth: authMaxWidth }]}>
               <FadeSlideIn distance={14} duration={280}>
-                <View style={styles.header}>
+                <View style={[styles.header, isLandscape && { marginBottom: 14 }]}>
                   <View style={[styles.logoWrapper, { width: logoWidth, height: logoHeight }]}>
                     <Image
                       source={HALO_LOGO_LIGHT}
@@ -288,7 +290,7 @@ export default function RegisterScreen() {
                   <Text
                     style={[
                       styles.title,
-                      { color: ui.title, fontSize: 28 },
+                      { color: ui.title, fontSize: isCompact ? 24 : 28 },
                     ]}
                   >
                     {step === "form"

@@ -30,6 +30,7 @@ import * as WebBrowser from "expo-web-browser";
 import * as AuthSession from "expo-auth-session";
 import { CONFIG } from "@/constants/config";
 import { storage } from "@/utils/storage";
+import { useResponsive } from "@/hooks/useResponsive";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -51,8 +52,9 @@ export default function LoginScreen() {
   const { showAlert } = useModal();
   const { t } = useTranslation();
   const router = useRouter();
-  const logoWidth = 192;
-  const logoHeight = 120;
+  const { authMaxWidth, horizontalPadding, isCompact, isLandscape } = useResponsive();
+  const logoWidth = isCompact || isLandscape ? 148 : 192;
+  const logoHeight = Math.round(logoWidth * 0.625);
 
   const discovery = AuthSession.useAutoDiscovery(`${CONFIG.KEYCLOAK_URL}/realms/${CONFIG.KEYCLOAK_REALM}`);
   const redirectUri = AuthSession.makeRedirectUri({ path: "login" });
@@ -226,16 +228,16 @@ export default function LoginScreen() {
             contentContainerStyle={[
               styles.scrollContent,
               {
-                paddingHorizontal: 20,
-                paddingBottom: 60,
+                paddingHorizontal: horizontalPadding,
+                paddingBottom: isLandscape ? 28 : 48,
               },
             ]}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <View style={styles.authPanel}>
+            <View style={[styles.authPanel, { maxWidth: authMaxWidth }]}>
               <FadeSlideIn distance={14} duration={280}>
-                <View style={styles.header}>
+                <View style={[styles.header, isLandscape && { marginBottom: 16 }]}>
                   <View style={[styles.logoWrapper, { width: logoWidth, height: logoHeight }]}>
                     <Image
                       source={HALO_LOGO_LIGHT}
@@ -257,7 +259,7 @@ export default function LoginScreen() {
                   <Text
                     style={[
                       styles.title,
-                      { color: ui.title, fontSize: 30 },
+                      { color: ui.title, fontSize: isCompact ? 25 : 30 },
                     ]}
                   >
                     {t("auth.login_title")}

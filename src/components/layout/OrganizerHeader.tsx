@@ -8,6 +8,7 @@ import { useAppTheme } from "@/theme";
 import { useTranslation } from "react-i18next";
 import { changeLanguage } from "@/locales/i18n";
 import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
+import { useResponsive } from "@/hooks/useResponsive";
 
 const HALO_MARK = require("../../../assets/haloticket-mark.png");
 
@@ -20,6 +21,7 @@ export function OrganizerHeader({ unreadCount = 0 }: OrganizerHeaderProps) {
   const { colors, isDark, toggleTheme } = useAppTheme();
   const { i18n, t } = useTranslation();
   const router = useRouter();
+  const { isCompact } = useResponsive();
 
   const themeSpin = useRef(new Animated.Value(isDark ? 1 : 0)).current;
   const themePop = useRef(new Animated.Value(1)).current;
@@ -81,22 +83,22 @@ export function OrganizerHeader({ unreadCount = 0 }: OrganizerHeaderProps) {
   const ticketColor = isDark ? colors.primary : "#0D63F3";
 
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, isCompact && { marginBottom: 14 }]}>
       <View style={[styles.headerLeft, { flex: 1 }]}>
         <Image
           source={HALO_MARK}
-          style={styles.logoMark}
+          style={[styles.logoMark, isCompact && { width: 40, height: 28, marginRight: 6 }]}
           resizeMode="contain"
         />
         <View style={{ flex: 1 }}>
-          <Text style={styles.logoText} numberOfLines={1}>
+          <Text style={[styles.logoText, isCompact && { fontSize: 19, marginRight: 6 }]} numberOfLines={1}>
             <Text style={{ color: haloColor }}>Halo</Text>
             <Text style={{ color: ticketColor }}>Ticket</Text>
           </Text>
-          <Text style={[styles.headerTitle, { color: colors.textSecondary, fontSize: 13, fontWeight: "500", marginTop: -2 }]} numberOfLines={1}>Organizer Center</Text>
+          <Text style={[styles.headerTitle, { color: colors.textSecondary, fontSize: isCompact ? 12 : 13, fontWeight: "500", marginTop: -2 }]} numberOfLines={1}>Organizer Center</Text>
         </View>
       </View>
-      <View style={styles.headerActions}>
+      <View style={[styles.headerActions, isCompact && { gap: 6 }]}>
         <AnimatedPressable
           contentStyle={styles.headerActionBtn}
           scaleTo={0.86}

@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useAppTheme } from "@/theme";
+import { useResponsive } from "@/hooks/useResponsive";
 import { AuthTopBar } from "@/components/layout/AuthTopBar";
 import { AnimatedPressable, FadeSlideIn } from "@/components/ui/AnimatedPressable";
 
@@ -22,6 +23,7 @@ export default function WelcomeScreen() {
   const { isDark } = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const { height, isCompact, isLandscape, authMaxWidth } = useResponsive();
 
   const darkOpacity = useRef(new Animated.Value(isDark ? 1 : 0)).current;
 
@@ -34,9 +36,9 @@ export default function WelcomeScreen() {
     }).start();
   }, [darkOpacity, isDark]);
 
-  const logoWidth = 196;
-  const logoHeight = 122;
-  const bottomReserve = 160;
+  const logoWidth = isLandscape ? 154 : isCompact ? 166 : 196;
+  const logoHeight = Math.round(logoWidth * (122 / 196));
+  const bottomReserve = isLandscape ? 28 : Math.round(Math.min(Math.max(height * 0.19, 96), 185));
 
   return (
     <View style={[styles.root, { backgroundColor: isDark ? "#050D2E" : "#F5F8FF" }]}>
@@ -60,16 +62,16 @@ export default function WelcomeScreen() {
           contentContainerStyle={[
             styles.scrollContent,
             {
-              paddingHorizontal: 28,
-              paddingTop: 20,
+              paddingHorizontal: isCompact ? 20 : 28,
+              paddingTop: isLandscape ? 8 : 20,
               paddingBottom: bottomReserve,
             },
           ]}
           showsVerticalScrollIndicator={false}
         >
-          <View style={[styles.content, { maxWidth: 420 }]}>
+          <View style={[styles.content, { maxWidth: authMaxWidth }]}>
             <FadeSlideIn distance={14} duration={280}>
-              <View style={[styles.brandBlock, { marginBottom: 24 }]}>
+              <View style={[styles.brandBlock, { marginBottom: isLandscape ? 14 : 24 }]}>
                 <View style={[styles.logoBox, { width: logoWidth, height: logoHeight }]}>
                   <Image
                     source={HALO_LOGO_LIGHT}
@@ -98,13 +100,13 @@ export default function WelcomeScreen() {
             </FadeSlideIn>
 
             <FadeSlideIn delay={70} distance={14} duration={280}>
-              <View style={[styles.copyBlock, { marginBottom: 28 }]}>
+              <View style={[styles.copyBlock, { marginBottom: isLandscape ? 18 : 28 }]}>
                 <Text
                   style={[
                     styles.headline,
                     {
                       color: isDark ? "#F8FAFC" : "#091E42",
-                      fontSize: 22,
+                      fontSize: isCompact ? 19 : 22,
                     },
                   ]}
                 >

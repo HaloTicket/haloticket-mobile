@@ -17,6 +17,7 @@ import { SearchBar } from "@/components/ui/SearchBar";
 import { notificationApi } from "@/services/api/notificationApi";
 import { countUnreadNotifications } from "@/utils/notifications";
 import { logError } from "@/utils/log";
+import { useResponsive } from "@/hooks/useResponsive";
 
 /**
  * Màn hình trung tâm tổ chức: liệt kê sự kiện được phân công cho người dùng, lọc theo tab
@@ -26,6 +27,13 @@ export default function OrganizerCenterScreen() {
   const { colors } = useAppTheme();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { width, contentMaxWidth, horizontalPadding, eventColumns } = useResponsive();
+  const gridGap = 14;
+  const availableWidth = Math.min(width, contentMaxWidth) - horizontalPadding * 2;
+  const cardWidth =
+    eventColumns > 1
+      ? Math.floor((availableWidth - gridGap * (eventColumns - 1)) / eventColumns)
+      : undefined;
   
   const [filter, setFilter] = useState<"upcoming" | "past">("upcoming");
   const [isLoading, setIsLoading] = useState(true);
@@ -95,7 +103,17 @@ export default function OrganizerCenterScreen() {
   return (
     <ScreenBackground>
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-        <View style={styles.container}>
+        <View
+          style={[
+            styles.container,
+            {
+              maxWidth: contentMaxWidth,
+              width: "100%",
+              alignSelf: "center",
+              paddingHorizontal: horizontalPadding,
+            },
+          ]}
+        >
           <OrganizerHeader unreadCount={unreadCount} />
 
           <EventFilterTabs 
@@ -125,9 +143,16 @@ export default function OrganizerCenterScreen() {
             </View>
           ) : (
             <FlatList
+              key={`events-grid-${eventColumns}`}
               data={filteredEvents}
+              numColumns={eventColumns}
+              columnWrapperStyle={eventColumns > 1 ? { gap: gridGap } : undefined}
               keyExtractor={(item) => item.id || Math.random().toString()}
-              renderItem={({ item, index }) => <EventCard event={item} index={index} />}
+              renderItem={({ item, index }) => (
+                <View style={cardWidth ? { width: cardWidth } : undefined}>
+                  <EventCard event={item} index={index} />
+                </View>
+              )}
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
             />

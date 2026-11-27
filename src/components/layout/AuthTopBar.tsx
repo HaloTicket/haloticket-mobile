@@ -7,6 +7,7 @@ import * as Haptics from "expo-haptics";
 import { useTranslation } from "react-i18next";
 import { changeLanguage } from "@/locales/i18n";
 import { useAppTheme } from "@/theme";
+import { useResponsive } from "@/hooks/useResponsive";
 import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 
 interface AuthTopBarProps {
@@ -20,6 +21,7 @@ interface AuthTopBarProps {
  */
 export function AuthTopBar({ showBack = false }: AuthTopBarProps) {
   const { isDark } = useAppTheme();
+  const { horizontalPadding, contentMaxWidth } = useResponsive();
   const { i18n } = useTranslation();
   const router = useRouter();
   const langPop = useRef(new Animated.Value(1)).current;
@@ -51,7 +53,7 @@ export function AuthTopBar({ showBack = false }: AuthTopBarProps) {
   const accentColor = isDark ? "#60A5FA" : "#0D63F3";
 
   return (
-    <View style={styles.bar}>
+    <View style={[styles.bar, { paddingHorizontal: horizontalPadding, maxWidth: contentMaxWidth, width: "100%", alignSelf: "center" }]}>
       {showBack ? (
         <AnimatedPressable
           scaleTo={0.88}

@@ -29,6 +29,7 @@ import {
   markNotificationReadInList,
 } from "@/utils/notifications";
 import { logError } from "@/utils/log";
+import { useResponsive } from "@/hooks/useResponsive";
 
 /**
  * Màn hình hộp thư thông báo kênh STAFF dành cho nhân viên/ban tổ chức.
@@ -40,6 +41,7 @@ export default function StaffNotificationsScreen() {
   const { showAlert } = useModal();
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const { horizontalPadding, isCompact } = useResponsive();
 
   const [notifications, setNotifications] = useState<StaffNotification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -233,10 +235,10 @@ export default function StaffNotificationsScreen() {
         <Animated.View
           style={[
             styles.container,
-            { opacity: inboxEntrance, paddingHorizontal: 16 },
+            { opacity: inboxEntrance, paddingHorizontal: horizontalPadding },
           ]}
         >
-        <View style={styles.header}>
+        <View style={[styles.header, isCompact && { gap: 8 }]}>
           <AnimatedPressable
             scaleTo={0.88}
             contentStyle={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
@@ -246,7 +248,7 @@ export default function StaffNotificationsScreen() {
             <Ionicons name="arrow-back" size={20} color={colors.text} />
           </AnimatedPressable>
           <View style={styles.headerTextGroup}>
-            <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
+            <Text style={[styles.headerTitle, { color: colors.text }, isCompact && { fontSize: 18 }]} numberOfLines={1}>
               {t("notifications.title")}
             </Text>
             <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
@@ -257,7 +259,8 @@ export default function StaffNotificationsScreen() {
             style={[
               styles.unreadSummaryPill,
               {
-                                backgroundColor: unreadCount > 0 ? `${colors.primary}1A` : colors.surface,
+                maxWidth: isCompact ? 110 : 160,
+                backgroundColor: unreadCount > 0 ? `${colors.primary}1A` : colors.surface,
                 borderColor: unreadCount > 0 ? colors.primary : colors.border,
               },
             ]}
@@ -340,6 +343,9 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    width: "100%",
+    maxWidth: 760,
+    alignSelf: "center",
     paddingHorizontal: 16,
     paddingTop: 12,
   },
