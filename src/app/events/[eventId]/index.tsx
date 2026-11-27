@@ -1,15 +1,21 @@
-import { useState, useEffect, useCallback } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, FlatList, RefreshControl } from "react-native";
+import { USE_NATIVE_ANIMATION_DRIVER } from "@/utils/animationDriver";
+import { useState, useEffect, useCallback, useContext, useRef } from "react";
+import { Animated, Easing, Platform, View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, FlatList, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 import Svg, { Circle } from 'react-native-svg';
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { useAppTheme } from "@/theme";
+import { ScreenBackground } from "@/components/layout/ScreenBackground";
+import { CheckinAssistantContext } from "@/components/event/CheckinAssistantContext";
+import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 import { Ionicons } from "@expo/vector-icons";
 import { eventApi } from "@/services/api/eventApi";
 import { EventData } from "@/types/event";
 import { useTranslation } from "react-i18next";
 import { logError } from "@/utils/log";
 import { orderStatusInfo } from "@/utils/orderStatus";
+import { useResponsive } from "@/hooks/useResponsive";
 
 /**
  * Bảng điều khiển của một sự kiện với 3 tab: doanh thu, check-in và đơn hàng.
@@ -18,9 +24,12 @@ import { orderStatusInfo } from "@/utils/orderStatus";
  */
 export default function EventDashboardScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
-  const { colors } = useAppTheme();
+  const { colors, isDark } = useAppTheme();
+  const inactiveChipBg = isDark ? "transparent" : "rgba(255, 255, 255, 0.78)";
   const router = useRouter();
   const { t } = useTranslation();
+  const { isCompact, isTablet, horizontalPadding, contentMaxWidth } = useResponsive();
+  const maxContainerWidth = Math.min(contentMaxWidth, 920);
   
   const [activeTab, setActiveTab] = useState<"revenue" | "checkin" | "orders">("revenue");
   const [isLoading, setIsLoading] = useState(true);
@@ -43,6 +52,12 @@ export default function EventDashboardScreen() {
   
   // suất diễn
   const [selectedShowtimeId, setSelectedShowtimeId] = useState<string>("");
+  const { setDashboardScope } = useContext(CheckinAssistantContext);
+  const selectedShowtimeTitle = event?.showtimes?.find(showtime => showtime.id === selectedShowtimeId)?.name;
+
+  useFocusEffect(useCallback(() => {
+    setDashboardScope({ eventId, eventTitle: event?.title, showtimeId: selectedShowtimeId, showtimeTitle: selectedShowtimeTitle });
+  }, [eventId, event?.title, selectedShowtimeId, selectedShowtimeTitle, setDashboardScope]));
 
   /**
    * Tải thông tin sự kiện và thống kê 30 ngày; nếu thống kê bị từ chối (403) thì đánh dấu và chuyển sang tab check-in.
@@ -128,9 +143,32 @@ export default function EventDashboardScreen() {
     }
   }, [activeTab, searchOrder, selectedShowtimeId]);
 
-  /** Đổi tab đang hiển thị. */
+  const tabOpacity = useRef(new Animated.Value(1)).current;
+  const tabTranslateY = useRef(new Animated.Value(0)).current;
+
+  /** Đổi tab đang hiển thị kèm hiệu ứng chuyển mượt và rung nhẹ. */
   const handleTabChange = (tab: "revenue" | "checkin" | "orders") => {
+    if (tab === activeTab) return;
+    if (Platform.OS !== "web") {
+      Haptics.selectionAsync().catch(() => {});
+    }
     setActiveTab(tab);
+    tabOpacity.setValue(0);
+    tabTranslateY.setValue(8);
+    Animated.parallel([
+      Animated.timing(tabOpacity, {
+        toValue: 1,
+        duration: 210,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: USE_NATIVE_ANIMATION_DRIVER,
+      }),
+      Animated.timing(tabTranslateY, {
+        toValue: 0,
+        duration: 210,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: USE_NATIVE_ANIMATION_DRIVER,
+      }),
+    ]).start();
   };
   
   /** Vòng tròn tiến độ SVG hiển thị phần trăm (0 đến 100) bằng màu truyền vào. */
@@ -143,7 +181,7 @@ export default function EventDashboardScreen() {
     
     return (
       <View style={[styles.circularProgressContainer, { width: size, height: size, justifyContent: 'center', alignItems: 'center' }]}>
-        <Svg width={size} height={size} style={{ position: 'absolute' }}>
+        <Svg width={size} height={size} style={{ position: 'absolute', transform: [{ rotate: '-90deg' }] }}>
           <Circle
             stroke={colors.border}
             cx={size / 2}
@@ -162,9 +200,6 @@ export default function EventDashboardScreen() {
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
             fill="none"
-            originX={size / 2}
-            originY={size / 2}
-            rotation="-90"
           />
         </Svg>
         <Text style={[styles.progressText, { color }]}>{percentage}%</Text>
@@ -182,7 +217,7 @@ export default function EventDashboardScreen() {
           <TouchableOpacity
             style={[
               styles.showtimeBtn,
-              selectedShowtimeId === "" ? { backgroundColor: colors.primary } : { borderColor: colors.border, borderWidth: 1 }
+              selectedShowtimeId === "" ? { backgroundColor: colors.primary } : { backgroundColor: inactiveChipBg, borderColor: colors.border, borderWidth: 1 }
             ]}
             onPress={() => setSelectedShowtimeId("")}
           >
@@ -195,7 +230,7 @@ export default function EventDashboardScreen() {
               key={st.id}
               style={[
                 styles.showtimeBtn,
-                selectedShowtimeId === st.id ? { backgroundColor: colors.primary } : { borderColor: colors.border, borderWidth: 1 }
+                selectedShowtimeId === st.id ? { backgroundColor: colors.primary } : { backgroundColor: inactiveChipBg, borderColor: colors.border, borderWidth: 1 }
               ]}
               onPress={() => setSelectedShowtimeId(st.id)}
             >
@@ -223,7 +258,7 @@ export default function EventDashboardScreen() {
 
     return (
       <ScrollView 
-        style={styles.tabContent} 
+        style={[styles.tabContent, { padding: horizontalPadding }]} 
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} colors={[colors.primary]} />
@@ -231,33 +266,47 @@ export default function EventDashboardScreen() {
       >
         <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 16 }]}>{t("dashboard.overview")}</Text>
         
-        {/* Doanh thu */}
-        <View style={[styles.card, { backgroundColor: colors.surface, marginBottom: 16 }]}>
-          <View style={styles.statRow}>
-            <View>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t("dashboard.revenue")}</Text>
-              <View style={styles.statValueRow}>
-                <View style={[styles.dot, { backgroundColor: colors.primary }]} />
-                <Text style={[styles.statValue, { color: colors.text }]}>{currentRev.toLocaleString("vi-VN")}đ</Text>
+        <View style={isTablet ? styles.statGridTablet : undefined}>
+          {/* Doanh thu */}
+          <View style={[styles.card, { backgroundColor: colors.surface, marginBottom: 16 }, isTablet && { flex: 1 }]}>
+            <View style={styles.statRow}>
+              <View style={styles.statTextCol}>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t("dashboard.revenue")}</Text>
+                <View style={styles.statValueRow}>
+                  <View style={[styles.dot, { backgroundColor: colors.primary }]} />
+                  <Text
+                    style={[styles.statValue, { color: colors.text }, isCompact && { fontSize: 16 }]}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    {currentRev.toLocaleString("vi-VN")}đ
+                  </Text>
+                </View>
+                <Text style={[styles.statSubValue, { color: colors.textSecondary }]}>{t("dashboard.target")}{totalTarget.toLocaleString("vi-VN")}đ</Text>
               </View>
-              <Text style={[styles.statSubValue, { color: colors.textSecondary }]}>{t("dashboard.target")}{totalTarget.toLocaleString("vi-VN")}đ</Text>
+              <CircularProgress percentage={revPercent} color="#FFC107" />
             </View>
-            <CircularProgress percentage={revPercent} color="#FFC107" />
           </View>
-        </View>
 
-        {/* Số vé bán ra */}
-        <View style={[styles.card, { backgroundColor: colors.surface, marginBottom: 16 }]}>
-          <View style={styles.statRow}>
-            <View>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t("dashboard.tickets_sold")}</Text>
-              <View style={styles.statValueRow}>
-                <View style={[styles.dot, { backgroundColor: "#34C759" }]} />
-                <Text style={[styles.statValue, { color: colors.text }]}>{currentTicketsSold.toLocaleString("vi-VN")}</Text>
+          {/* Số vé bán ra */}
+          <View style={[styles.card, { backgroundColor: colors.surface, marginBottom: 16 }, isTablet && { flex: 1 }]}>
+            <View style={styles.statRow}>
+              <View style={styles.statTextCol}>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t("dashboard.tickets_sold")}</Text>
+                <View style={styles.statValueRow}>
+                  <View style={[styles.dot, { backgroundColor: "#34C759" }]} />
+                  <Text
+                    style={[styles.statValue, { color: colors.text }, isCompact && { fontSize: 16 }]}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    {currentTicketsSold.toLocaleString("vi-VN")}
+                  </Text>
+                </View>
+                <Text style={[styles.statSubValue, { color: colors.textSecondary }]}>{t("dashboard.target")}{totalTicketsTarget.toLocaleString("vi-VN")}</Text>
               </View>
-              <Text style={[styles.statSubValue, { color: colors.textSecondary }]}>{t("dashboard.target")}{totalTicketsTarget.toLocaleString("vi-VN")}</Text>
+              <CircularProgress percentage={ticketsPercent} color="#34C759" />
             </View>
-            <CircularProgress percentage={ticketsPercent} color="#34C759" />
           </View>
         </View>
       </ScrollView>
@@ -277,7 +326,7 @@ export default function EventDashboardScreen() {
 
     return (
       <ScrollView 
-        style={styles.tabContent} 
+        style={[styles.tabContent, { padding: horizontalPadding }]} 
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={isCheckinsLoading || isRefreshing} onRefresh={onRefresh} colors={[colors.primary]} />
@@ -286,13 +335,13 @@ export default function EventDashboardScreen() {
         {renderShowtimeSelector()}
         <View style={styles.filterRow}>
            <TouchableOpacity 
-             style={[styles.filterBtn, checkinTab === 'checkin' ? { backgroundColor: colors.primary } : { borderColor: colors.border, borderWidth: 1 }]}
+             style={[styles.filterBtn, checkinTab === 'checkin' ? { backgroundColor: colors.primary } : { backgroundColor: inactiveChipBg, borderColor: colors.border, borderWidth: 1 }]}
              onPress={() => setCheckinTab('checkin')}
            >
              <Text style={[styles.filterText, checkinTab === 'checkin' ? { color: "#fff", fontWeight: '600' } : { color: colors.textSecondary }]}>Check-in ({filteredCheckins.length})</Text>
            </TouchableOpacity>
            <TouchableOpacity 
-             style={[styles.filterBtn, checkinTab === 'redeem' ? { backgroundColor: colors.primary } : { borderColor: colors.border, borderWidth: 1 }]}
+             style={[styles.filterBtn, checkinTab === 'redeem' ? { backgroundColor: colors.primary } : { backgroundColor: inactiveChipBg, borderColor: colors.border, borderWidth: 1 }]}
              onPress={() => setCheckinTab('redeem')}
            >
              <Text style={[styles.filterText, checkinTab === 'redeem' ? { color: "#fff", fontWeight: '600' } : { color: colors.textSecondary }]}>Redeem</Text>
@@ -301,7 +350,7 @@ export default function EventDashboardScreen() {
 
         <View style={[styles.card, { backgroundColor: colors.surface, marginTop: 16 }]}>
           <View style={styles.statRow}>
-            <View>
+            <View style={styles.statTextCol}>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{checkinTab === 'checkin' ? t("dashboard.checked_in") : t("dashboard.redeemed")}</Text>
               <View style={styles.statValueRow}>
                 <View style={[styles.dot, { backgroundColor: colors.primary }]} />
@@ -316,12 +365,13 @@ export default function EventDashboardScreen() {
             {!analyticsDenied && <CircularProgress percentage={checkinPercent} color={colors.primary} />}
           </View>
         </View>
-        <TouchableOpacity 
-          style={{ backgroundColor: colors.primary, padding: 16, borderRadius: 12, marginTop: 16, alignItems: "center" }}
+        <AnimatedPressable
+          scaleTo={0.97}
+          contentStyle={{ backgroundColor: colors.primary, padding: 16, borderRadius: 12, marginTop: 16, alignItems: "center" }}
           onPress={() => router.push({ pathname: `/check-in/${eventId}`, params: { showtimeId: selectedShowtimeId, mode: checkinTab } })}
         >
           <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>{checkinTab === 'checkin' ? t("dashboard.scan_qr_checkin") : t("dashboard.scan_qr_redeem")}</Text>
-        </TouchableOpacity>
+        </AnimatedPressable>
         
         <View style={{ marginTop: 24, paddingBottom: 40 }}>
            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>{checkinTab === 'checkin' ? t("dashboard.recent_history_checkin") : t("dashboard.recent_history_redeem")}</Text>
@@ -344,7 +394,7 @@ export default function EventDashboardScreen() {
 
   /** Tab đơn hàng: ô tìm kiếm, số lượng và danh sách đơn kèm trạng thái; hiện thông báo khi không có quyền hoặc không có đơn. */
   const renderOrders = () => (
-    <View style={styles.tabContent}>
+    <View style={[styles.tabContent, { padding: horizontalPadding }]}>
       {renderShowtimeSelector()}
       
       <View style={[styles.searchBox, { backgroundColor: colors.surface }]}>
@@ -378,17 +428,21 @@ export default function EventDashboardScreen() {
               return (
               <View style={[styles.orderCard, { backgroundColor: colors.surface }]}>
                 <View style={styles.orderCardHeader}>
-                  <Text style={[styles.orderCustomerName, { color: colors.text }]}>{item.customerName || t("dashboard.customer")}</Text>
+                  <Text style={[styles.orderCustomerName, { color: colors.text }]} numberOfLines={1}>
+                    {item.customerName || t("dashboard.customer")}
+                  </Text>
                   <Text style={[styles.orderStatus, { color: statusColor }]}>
                     {statusInfo.labelKey ? t(statusInfo.labelKey) : item.status}
                   </Text>
                 </View>
                 <Text style={[styles.orderId, { color: colors.textSecondary }]}>{t("dashboard.order_code")}{item.bookingCode}</Text>
                 <View style={[styles.divider, { backgroundColor: colors.border }]} />
-                <View style={styles.orderInfoRow}>
+                <View style={[styles.orderInfoRow, isCompact && styles.orderInfoRowCompact]}>
                   <View style={styles.orderInfoCol}>
                     <Text style={[styles.orderInfoLabel, { color: colors.textSecondary }]}>{t("dashboard.email")}</Text>
-                    <Text style={[styles.orderInfoValue, { color: colors.text }]}>{item.customerEmail}</Text>
+                    <Text style={[styles.orderInfoValue, { color: colors.text }]} numberOfLines={2}>
+                      {item.customerEmail}
+                    </Text>
                   </View>
                   <View style={styles.orderInfoCol}>
                     <Text style={[styles.orderInfoLabel, { color: colors.textSecondary }]}>{t("dashboard.total_amount")}</Text>
@@ -405,102 +459,116 @@ export default function EventDashboardScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <View style={styles.headerInfo}>
-          <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
-            {event?.title || t("dashboard.manage_event")}
-          </Text>
-          <Text style={[styles.headerDate, { color: colors.textSecondary }]} numberOfLines={1}>
-            {event?.locationName || t("dashboard.loading")}
-          </Text>
-        </View>
-      </View>
-
-      {/* Tabs Navigation */}
-      <View style={[styles.tabNav, { borderBottomColor: colors.border }]}>
-        {!analyticsDenied && (
-        <TouchableOpacity 
-          style={[styles.tabNavItem, activeTab === "revenue" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
-          onPress={() => handleTabChange("revenue")}
-        >
-          <Text style={[styles.tabNavText, activeTab === "revenue" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>{t("dashboard.revenue")}</Text>
-        </TouchableOpacity>
-        )}
-        <TouchableOpacity 
-          style={[styles.tabNavItem, activeTab === "checkin" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
-          onPress={() => handleTabChange("checkin")}
-        >
-          <Text style={[styles.tabNavText, activeTab === "checkin" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>{t("dashboard.checkin")}</Text>
-        </TouchableOpacity>
-        {!analyticsDenied && (
-        <TouchableOpacity 
-          style={[styles.tabNavItem, activeTab === "orders" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
-          onPress={() => handleTabChange("orders")}
-        >
-          <Text style={[styles.tabNavText, activeTab === "orders" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>{t("dashboard.orders")}</Text>
-        </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Tab Content */}
-      <View style={styles.contentContainer}>
-        {isLoading ? (
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <ActivityIndicator size="large" color={colors.primary} />
+    <ScreenBackground>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={[styles.responsiveShell, { maxWidth: maxContainerWidth }]}>
+        {/* Header */}
+        <View style={[styles.header, { paddingHorizontal: horizontalPadding }]}>
+          <AnimatedPressable scaleTo={0.86} onPress={() => router.back()} contentStyle={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </AnimatedPressable>
+          <View style={styles.headerInfo}>
+            <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
+              {event?.title || t("dashboard.manage_event")}
+            </Text>
+            <Text style={[styles.headerDate, { color: colors.textSecondary }]} numberOfLines={1}>
+              {event?.locationName || t("dashboard.loading")}
+            </Text>
           </View>
-        ) : (
-          <>
-            {activeTab === "revenue" && !analyticsDenied && renderRevenue()}
-            {activeTab === "checkin" && renderCheckIn()}
-            {activeTab === "orders" && !analyticsDenied && renderOrders()}
-          </>
-        )}
-      </View>
+        </View>
+
+        {/* Tabs Navigation */}
+        <View style={[styles.tabNav, { borderBottomColor: colors.border }]}>
+          {!analyticsDenied && (
+          <AnimatedPressable
+            style={{ flex: 1 }}
+            scaleTo={0.96}
+            contentStyle={[styles.tabNavItem, activeTab === "revenue" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
+            onPress={() => handleTabChange("revenue")}
+          >
+            <Text style={[styles.tabNavText, activeTab === "revenue" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>{t("dashboard.revenue")}</Text>
+          </AnimatedPressable>
+          )}
+          <AnimatedPressable
+            style={{ flex: 1 }}
+            scaleTo={0.96}
+            contentStyle={[styles.tabNavItem, activeTab === "checkin" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
+            onPress={() => handleTabChange("checkin")}
+          >
+            <Text style={[styles.tabNavText, activeTab === "checkin" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>{t("dashboard.checkin")}</Text>
+          </AnimatedPressable>
+          {!analyticsDenied && (
+          <AnimatedPressable
+            style={{ flex: 1 }}
+            scaleTo={0.96}
+            contentStyle={[styles.tabNavItem, activeTab === "orders" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
+            onPress={() => handleTabChange("orders")}
+          >
+            <Text style={[styles.tabNavText, activeTab === "orders" ? { color: colors.text, fontWeight: 'bold' } : { color: colors.textSecondary }]}>{t("dashboard.orders")}</Text>
+          </AnimatedPressable>
+          )}
+        </View>
+
+        {/* Tab Content */}
+        <View style={styles.contentContainer}>
+          {isLoading ? (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          ) : (
+            <Animated.View style={{ flex: 1, opacity: tabOpacity, transform: [{ translateY: tabTranslateY }] }}>
+              {activeTab === "revenue" && !analyticsDenied && renderRevenue()}
+              {activeTab === "checkin" && renderCheckIn()}
+              {activeTab === "orders" && !analyticsDenied && renderOrders()}
+            </Animated.View>
+          )}
+        </View>
+        </View>
     </SafeAreaView>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
+  responsiveShell: { flex: 1, width: "100%", alignSelf: "center" },
   header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 12 },
   backButton: { marginRight: 16 },
   headerInfo: { flex: 1 },
   headerTitle: { fontSize: 16, fontWeight: "bold" },
   headerDate: { fontSize: 12, marginTop: 2 },
   tabNav: { flexDirection: "row", borderBottomWidth: 1 },
-  tabNavItem: { flex: 1, paddingVertical: 12, alignItems: "center" },
+  tabNavItem: { paddingVertical: 12, alignItems: "center", justifyContent: "center" },
   tabNavText: { fontSize: 14 },
   contentContainer: { flex: 1 },
   tabContent: { flex: 1, padding: 16 },
   sectionTitle: { fontSize: 16, fontWeight: "bold" },
+  statGridTablet: { flexDirection: "row", gap: 16 },
   card: { padding: 16, borderRadius: 16, borderWidth: 1, borderColor: "rgba(0,0,0,0.05)" },
   statRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  statTextCol: { flex: 1, paddingRight: 12 },
   statLabel: { fontSize: 12, marginBottom: 4 },
   statValueRow: { flexDirection: "row", alignItems: "center", marginBottom: 2 },
   dot: { width: 8, height: 8, borderRadius: 4, marginRight: 6 },
-  statValue: { fontSize: 18, fontWeight: "bold" },
+  statValue: { fontSize: 18, fontWeight: "bold", flexShrink: 1 },
   statSubValue: { fontSize: 12 },
   circularProgressContainer: { width: 60, height: 60, justifyContent: "center", alignItems: "center" },
   circularProgress: { width: 60, height: 60, borderRadius: 30, borderWidth: 4, justifyContent: "center", alignItems: "center" },
   progressText: { fontSize: 14, fontWeight: "bold" },
   searchBox: { flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, marginBottom: 16 },
   searchInput: { flex: 1, marginLeft: 8, fontSize: 14 },
-  filterRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
+  filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 },
   filterBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   filterText: { fontSize: 13 },
   orderCount: { fontSize: 14, fontWeight: "600", marginBottom: 16 },
   orderCard: { padding: 16, borderRadius: 12, marginBottom: 12 },
-  orderCardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
-  orderCustomerName: { fontSize: 15, fontWeight: "600" },
+  orderCardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 4 },
+  orderCustomerName: { fontSize: 15, fontWeight: "600", flex: 1 },
   orderStatus: { fontSize: 12, fontWeight: "bold" },
   orderId: { fontSize: 13, marginBottom: 12 },
   divider: { height: 1, marginBottom: 12 },
-  orderInfoRow: { flexDirection: "row" },
+  orderInfoRow: { flexDirection: "row", gap: 12 },
+  orderInfoRowCompact: { flexDirection: "column", gap: 8 },
   orderInfoCol: { flex: 1 },
   orderInfoLabel: { fontSize: 12, marginBottom: 2 },
   orderInfoValue: { fontSize: 14, fontWeight: "500" },

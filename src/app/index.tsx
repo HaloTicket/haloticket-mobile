@@ -1,21 +1,17 @@
 import { Redirect } from "expo-router";
 import { useAuth } from "@/hooks/useAuth";
-import { View, ActivityIndicator } from "react-native";
+import { View } from "react-native";
 
-/** Trang gốc `/`: tùy trạng thái đăng nhập mà chuyển tới tab chính hoặc trang đăng nhập. */
+/** Trang gốc `/`: tùy trạng thái đăng nhập mà chuyển tới tab chính hoặc màn hình bắt đầu. */
 export default function Index() {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#2563EB" />
-      </View>
-    );
+    return <View style={{ flex: 1 }} />;
   }
 
   if (!isAuthenticated) {
-    return <Redirect href="/(auth)/login" />;
+    return <Redirect href="/(auth)/welcome" />;
   }
 
   return <Redirect href="/(tabs)" />;

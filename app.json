@@ -32,6 +32,13 @@
       "expo-web-browser",
       "expo-localization",
       [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "HaloTicket dùng micrô để bạn đọc câu hỏi cho trợ lý check-in.",
+          "speechRecognitionPermission": "HaloTicket chuyển câu hỏi bạn đọc thành văn bản để bạn kiểm tra trước khi gửi."
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "HaloTicket dùng camera để quét mã QR trên vé."
